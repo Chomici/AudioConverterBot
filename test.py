@@ -4,6 +4,8 @@ from aiogram.filters import Command
 import os
 from dotenv import load_dotenv
 
+
+
 load_dotenv()
 
 # Создаем объекты бота и диспетчера
