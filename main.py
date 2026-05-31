@@ -8,14 +8,16 @@ from handlers.common import router as common_router
 
 load_dotenv()
 
-bot = Bot(token=os.getenv("TOKEN"))
-dp = Dispatcher()
-dp.include_router(common_router)
-
 
 async def main():
-    await dp.start_polling(bot)
-    
+    bot = Bot(token=os.getenv("TOKEN"))
+    dp = Dispatcher()
+    dp.include_router(common_router)
+
+    try:
+        await dp.start_polling(bot)
+    finally:
+        await bot.session.close()
 
 if __name__ == "__main__":
     asyncio.run(main())
