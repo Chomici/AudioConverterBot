@@ -2,9 +2,15 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram import types
 from aiogram.utils.keyboard import InlineKeyboardMarkup, InlineKeyboardBuilder
+from aiogram import F
 
 # Каждый роутер отвечает за свой набор команд/действий
 router = Router()
+
+_INFO_MESSAGES = {
+    "about_authors": "Авторы",
+    "help": "Справка"
+}
 
 
 def get_menu_keyboard() -> InlineKeyboardMarkup:
@@ -34,6 +40,12 @@ async def cmd_menu(message: types.Message):
 @router.message()
 async def echo(message: types.Message):
     await message.answer(f"Вы написали: {message.text}")
+
+
+@router.callback_query(F.data.in_(_INFO_MESSAGES))
+async def handle_callback(callback: types.CallbackQuery):
+    await callback.answer()
+    await callback.message.edit_text(f"{_INFO_MESSAGES.get(callback.data, "Нет информации")}")
 
 
 @router.callback_query()
