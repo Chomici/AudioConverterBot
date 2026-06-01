@@ -38,7 +38,7 @@ async def handle_info_buttons(callback: types.CallbackQuery):
 
 
 @router.callback_query(F.data == "file_download")
-async def handle_file_download(callback: types.CallbackQuery):
+async def show_file_choice(callback: types.CallbackQuery):
     await callback.answer()
 
     builder = InlineKeyboardBuilder()
@@ -55,6 +55,6 @@ async def handle_back(callback: types.CallbackQuery):
 
 
 @router.callback_query()
-async def handle_callback(callback: types.CallbackQuery):
+async def handle_unknown_callback(callback: types.CallbackQuery):
     await callback.answer()  # Без всплывающего уведомления
     await callback.message.edit_text(f"Вы нажали: {callback.data}")
