@@ -1,8 +1,10 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram import types
-from aiogram.utils.keyboard import InlineKeyboardMarkup, InlineKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import F
+
+from keyboards.menu import get_menu_keyboard
 
 # Каждый роутер отвечает за свой набор команд/действий
 router = Router()
@@ -11,19 +13,6 @@ _INFO_MESSAGES = {
     "about_authors": "Авторы",
     "help": "Справка"
 }
-
-
-def get_menu_keyboard() -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    builder.button(text="Загрузить файл", callback_data="file_download")
-    builder.button(text="Загрузить по ссылке", callback_data="download_by_url")
-    builder.button(text="Справка", callback_data="help")
-    builder.button(text="Об авторах", callback_data="about_authors")
-
-    # Разделяет кнопки по числу на строку
-    builder.adjust(2, 1, 1)
-
-    return builder.as_markup()
 
 
 @router.message(Command("start"))
