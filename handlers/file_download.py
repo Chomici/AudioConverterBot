@@ -2,9 +2,11 @@ from aiogram.filters import Command, StateFilter
 from aiogram import types, Bot, Router
 from aiogram.fsm.context import FSMContext
 from aiogram import F
+from aiogram.types import FSInputFile
 
 from states.file_download import FileDownloadState
-from keyboards.menu import get_upload_prompt_keyboard, get_file_choice_keyboard, get_menu_keyboard
+from keyboards.menu import get_upload_prompt_keyboard, get_file_choice_keyboard
+from keyboards.menu import get_menu_keyboard, get_audio_format_keyboard
 
 router = Router()
 
@@ -61,4 +63,20 @@ async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext
 
     await message.answer("Скачивается...")
     await bot.download(file.file_id, destination=f"temp_videos/{file.file_name}", timeout=300)
-    await state.clear()  # Временно, чтобы обновлять состояние после проверки
+
+    # Пока что отправляем тот же видос
+    await state.update_data(full_name=f"temp_videos/{file.file_name}")
+    await state.set_state(FileDownloadState.waiting_file_format)
+
+    await message.answer("Готово! Выберите формат аудиофайла: ",
+                         reply_markup=get_audio_format_keyboard())
+
+
+@router.callback_query(F.data == "mp3", StateFilter(FileDownloadState.waiting_file_format))
+async def return_audio(callback: types.CallbackQuery, state: FSMContext):
+    # Пока что отправляем тот же видос
+    file_name = await state.get_value("full_name")
+    audio = FSInputFile(file_name)
+
+    await callback.answer()
+    await callback.message.answer_document(document=audio, caption="Сделано с душой)")

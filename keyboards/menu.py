@@ -29,3 +29,10 @@ def get_upload_prompt_keyboard() -> InlineKeyboardMarkup:
     builder.button(text="В главное меню", callback_data="main_menu")
 
     return builder.as_markup()
+
+
+def get_audio_format_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text="MP3", callback_data="mp3")
+
+    return builder.as_markup()
