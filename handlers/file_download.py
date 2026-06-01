@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram import F
 
 from states.file_download import FileDownloadState
-from keyboards.menu import get_upload_prompt_keyboard
+from keyboards.menu import get_upload_prompt_keyboard, get_file_choice_keyboard, get_menu_keyboard
 
 router = Router()
 
@@ -30,6 +30,20 @@ async def cmd_upload_file(message: types.Message, state: FSMContext):
 @router.callback_query(F.data == "get_audio")
 async def handle_get_audio(callback: types.CallbackQuery, state: FSMContext):
     await show_upload_prompt(callback, state)
+
+
+@router.callback_query(F.data == "back", StateFilter(FileDownloadState.waiting_file))
+async def back_to_choice(callback: types.CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback.answer()
+    await callback.message.edit_text("Выберите действие:", reply_markup=get_file_choice_keyboard())
+
+
+@router.callback_query(F.data == "main_menu", StateFilter(FileDownloadState.waiting_file))
+async def to_main_menu(callback: types.CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback.answer()
+    await callback.message.edit_text("Выберите действие:", reply_markup=get_menu_keyboard())
 
 
 # Могут прислать либо несжатый(document), либо сжатый(video) файл
