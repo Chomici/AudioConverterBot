@@ -13,3 +13,19 @@ def get_menu_keyboard() -> InlineKeyboardMarkup:
     builder.adjust(2, 1, 1)
 
     return builder.as_markup()
+
+
+def get_file_choice_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text="Назад", callback_data="back")
+    builder.button(text="Получить аудио", callback_data="get_audio")
+
+    return builder.as_markup()
+
+
+def get_upload_prompt_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text="Назад", callback_data="back")
+    builder.button(text="В главное меню", callback_data="main_menu")
+
+    return builder.as_markup()

@@ -1,10 +1,10 @@
 from aiogram.filters import Command, StateFilter
 from aiogram import types, Bot, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import F
 
 from states.file_download import FileDownloadState
+from keyboards.menu import get_upload_prompt_keyboard
 
 router = Router()
 
@@ -13,17 +13,13 @@ router = Router()
 async def show_upload_prompt(event: types.Message | types.CallbackQuery, state: FSMContext):
     await state.set_state(FileDownloadState.waiting_file)
 
-    builder = InlineKeyboardBuilder()
-    builder.button(text="Назад", callback_data="back")
-    builder.button(text="В главное меню", callback_data="main_menu")
-
     # Из-за разных способов ответа Message и CallbackQuery проверяем тип события
     if isinstance(event, types.Message):
         await event.answer("Отправьте видео файл одного из поддерживаемых параметров:",
-                           reply_markup=builder.as_markup())
+                           reply_markup=get_upload_prompt_keyboard())
     else:
         await event.message.edit_text("Отправьте видео файл одного из поддерживаемых параметров:",
-                                      reply_markup=builder.as_markup())
+                                      reply_markup=get_upload_prompt_keyboard())
 
 
 @router.message(Command("uploadfile"))

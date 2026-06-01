@@ -1,10 +1,9 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram import types
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import F
 
-from keyboards.menu import get_menu_keyboard
+from keyboards.menu import get_menu_keyboard, get_file_choice_keyboard
 
 # Каждый роутер отвечает за свой набор команд/действий
 router = Router()
@@ -40,12 +39,7 @@ async def handle_info_buttons(callback: types.CallbackQuery):
 @router.callback_query(F.data == "file_download")
 async def show_file_choice(callback: types.CallbackQuery):
     await callback.answer()
-
-    builder = InlineKeyboardBuilder()
-    builder.button(text="Назад", callback_data="back")
-    builder.button(text="Получить аудио", callback_data="get_audio")
-
-    await callback.message.edit_text("Выберите действие:", reply_markup=builder.as_markup())
+    await callback.message.edit_text("Выберите действие:", reply_markup=get_file_choice_keyboard())
 
 
 @router.callback_query(F.data == "back")
