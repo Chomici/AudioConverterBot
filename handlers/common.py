@@ -15,7 +15,7 @@ _INFO_MESSAGES = {
 
 def get_menu_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    builder.button(text="Загрузить файл", callback_data="download_file")
+    builder.button(text="Загрузить файл", callback_data="file_download")
     builder.button(text="Загрузить по ссылке", callback_data="download_by_url")
     builder.button(text="Справка", callback_data="help")
     builder.button(text="Об авторах", callback_data="about_authors")
@@ -46,6 +46,23 @@ async def echo(message: types.Message):
 async def handle_info_buttons(callback: types.CallbackQuery):
     await callback.answer()
     await callback.message.edit_text(f"{_INFO_MESSAGES.get(callback.data, "Нет информации")}")
+
+
+@router.callback_query(F.data == "file_download")
+async def handle_file_download(callback: types.CallbackQuery):
+    await callback.answer()
+
+    builder = InlineKeyboardBuilder()
+    builder.button(text="Назад", callback_data="back")
+    builder.button(text="Получить аудио", callback_data="get_audio")
+
+    await callback.message.edit_text("Выберите действие:", reply_markup=builder.as_markup())
+
+
+@router.callback_query(F.data == "back")
+async def handle_back(callback: types.CallbackQuery):
+    await callback.answer()
+    await callback.message.edit_text("Выберите действие:", reply_markup=get_menu_keyboard())
 
 
 @router.callback_query()
