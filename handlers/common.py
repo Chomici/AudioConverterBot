@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram import types
 from aiogram import F
 
-from keyboards.menu import get_menu_keyboard, get_file_choice_keyboard
+from keyboards.menu import get_menu_keyboard, get_file_choice_keyboard, get_url_choice_keyboard
 
 # Каждый роутер отвечает за свой набор команд/действий
 router = Router()
@@ -40,6 +40,12 @@ async def handle_info_buttons(callback: types.CallbackQuery):
 async def show_file_choice(callback: types.CallbackQuery):
     await callback.answer()
     await callback.message.edit_text("Выберите действие:", reply_markup=get_file_choice_keyboard())
+
+
+@router.callback_query(F.data == "download_by_url")
+async def show_url_choice(callback: types.CallbackQuery):
+    await callback.answer()
+    await callback.message.edit_text("Выберите действие:", reply_markup=get_url_choice_keyboard())
 
 
 @router.callback_query(F.data == "back")

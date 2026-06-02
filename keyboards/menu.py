@@ -23,6 +23,17 @@ def get_file_choice_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
+def get_url_choice_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text="Получить видео", callback_data="url_get_video")
+    builder.button(text="Получить аудио", callback_data="url_get_audio")
+    builder.button(text="Назад", callback_data="back")
+
+    builder.adjust(2, 1)
+
+    return builder.as_markup()
+
+
 def get_upload_prompt_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text="Назад", callback_data="back")
