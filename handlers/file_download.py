@@ -1,3 +1,5 @@
+import os
+
 from aiogram.filters import Command, StateFilter
 from aiogram import types, Bot, Router
 from aiogram.fsm.context import FSMContext
@@ -80,3 +82,7 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
 
     await callback.answer()
     await callback.message.answer_document(document=audio, caption="Сделано с душой)")
+
+    if os.path.exists(file_name):
+        os.remove(file_name)
+
