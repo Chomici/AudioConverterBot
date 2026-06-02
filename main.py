@@ -17,6 +17,8 @@ async def main():
     dp.include_router(file_download_router)
     dp.include_router(common_router)
 
+    os.makedirs("temp_videos", exist_ok=True)
+
     try:
         await dp.start_polling(bot)
     finally:
