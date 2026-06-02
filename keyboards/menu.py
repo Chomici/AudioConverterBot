@@ -18,7 +18,7 @@ def get_menu_keyboard() -> InlineKeyboardMarkup:
 def get_file_choice_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text="Назад", callback_data="back")
-    builder.button(text="Получить аудио", callback_data="get_audio")
+    builder.button(text="Получить аудио", callback_data="file_get_audio")
 
     return builder.as_markup()
 

@@ -15,7 +15,7 @@ router = Router()
 
 
 # Принимаем файл либо по команде(/uploadfile), либо после нажатия кнопки ("Получить аудио")
-async def show_upload_prompt(event: types.Message | types.CallbackQuery, state: FSMContext):
+async def show_upload_file_prompt(event: types.Message | types.CallbackQuery, state: FSMContext):
     await state.set_state(FileDownloadState.waiting_file)
 
     # Из-за разных способов ответа Message и CallbackQuery проверяем тип события
@@ -29,12 +29,12 @@ async def show_upload_prompt(event: types.Message | types.CallbackQuery, state: 
 
 @router.message(Command("uploadfile"))
 async def cmd_upload_file(message: types.Message, state: FSMContext):
-    await show_upload_prompt(message, state)
+    await show_upload_file_prompt(message, state)
 
 
-@router.callback_query(F.data == "get_audio")
-async def handle_get_audio(callback: types.CallbackQuery, state: FSMContext):
-    await show_upload_prompt(callback, state)
+@router.callback_query(F.data == "file_get_audio")
+async def handle_file_get_audio(callback: types.CallbackQuery, state: FSMContext):
+    await show_upload_file_prompt(callback, state)
 
 
 @router.callback_query(F.data == "back", StateFilter(FileDownloadState.waiting_file))
