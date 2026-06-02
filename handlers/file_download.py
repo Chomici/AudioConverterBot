@@ -86,3 +86,4 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
     if os.path.exists(file_name):
         os.remove(file_name)
 
+    await state.clear()
