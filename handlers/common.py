@@ -33,7 +33,7 @@ async def echo(message: types.Message):
 @router.callback_query(F.data.in_(_INFO_MESSAGES))
 async def handle_info_buttons(callback: types.CallbackQuery):
     await callback.answer()
-    await callback.message.edit_text(f"{_INFO_MESSAGES.get(callback.data, "Нет информации")}")
+    await callback.message.edit_text(f"{_INFO_MESSAGES.get(callback.data, 'Нет информации')}")
 
 
 @router.callback_query(F.data == "file_download")
