@@ -9,7 +9,7 @@ def get_menu_keyboard() -> InlineKeyboardMarkup:
     builder.button(text="Справка", callback_data="help")
     builder.button(text="Об авторах", callback_data="about_authors")
 
-    # Разделяет кнопки по числу на строку
+    # Разделяет кнопки по числу кнопок на строку
     builder.adjust(2, 1, 1)
 
     return builder.as_markup()

@@ -52,9 +52,11 @@ async def to_main_menu(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.edit_text("Выберите действие:", reply_markup=get_menu_keyboard())
 
 
+# StateFilter гарантирует, что обработчик сработает только в нужном состоянии FSM.
 # Могут прислать либо несжатый(document), либо сжатый(video) файл
 @router.message(F.document | F.video, StateFilter(FileDownloadState.waiting_file))
 async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext):
+    # bot и state автоматически достаются aiogram из контекста
     file = message.document or message.video
 
     # У TelegramAPI ограничение в 20МБ приема и 50МБ отдачи (вот это проблема)

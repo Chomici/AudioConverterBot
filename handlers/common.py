@@ -32,7 +32,9 @@ async def echo(message: types.Message):
 
 @router.callback_query(F.data.in_(_INFO_MESSAGES))
 async def handle_info_buttons(callback: types.CallbackQuery):
+    # Без всплывающего уведомления + убирает анимацию загрузки на кнопке
     await callback.answer()
+    # edit_text редактирует существующее сообщение вместо отправки нового
     await callback.message.edit_text(f"{_INFO_MESSAGES.get(callback.data, 'Нет информации')}")
 
 
@@ -56,5 +58,5 @@ async def handle_back(callback: types.CallbackQuery):
 
 @router.callback_query()
 async def handle_unknown_callback(callback: types.CallbackQuery):
-    await callback.answer()  # Без всплывающего уведомления
+    await callback.answer()
     await callback.message.edit_text(f"Вы нажали: {callback.data}")
