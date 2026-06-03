@@ -37,6 +37,7 @@ async def handle_file_get_audio(callback: types.CallbackQuery, state: FSMContext
     await show_upload_file_prompt(callback, state)
 
 
+# Фильтры в декораторе через запятую это условие AND
 @router.callback_query(F.data == "back", StateFilter(FileDownloadState.waiting_file))
 async def back_to_choice(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()

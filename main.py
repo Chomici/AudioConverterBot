@@ -15,6 +15,8 @@ load_dotenv()
 async def main():
     bot = Bot(token=os.getenv("TOKEN"))
     dp = Dispatcher(storage=MemoryStorage())  # MemoryStorage нужен для хранения состояний
+
+    # Роутеры подключаются в порядке от специфичных к общим
     dp.include_router(url_download_router)
     dp.include_router(file_download_router)
     dp.include_router(common_router)
