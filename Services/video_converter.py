@@ -1,5 +1,5 @@
 from re import search # для обрезки расширения файла
-from os import path # для отправки в temp_videos
+from pathlib import Path # для отправки в temp_videos
 from moviepy import VideoFileClip
 
 POSSIBLE_AUDIO_FORMATS = [ # Взято из use-case
@@ -25,7 +25,10 @@ class VideoConverter:
             raise ValueError("Файл без формата") 
             
         self.file_format = regex_file_format.group(0)[1:] # Формат файла, полученный из регулярного выражения без точки
-        self.filename = filename[:regex_file_format.start()] # Исходное имя файла без расширения
+        
+        file_path = Path(filename)
+        self.filename = file_path.stem # Исходное имя файла без расширения
+        
         self.input_video_file = VideoFileClip(f"{filename}") # Обьект типа VideoFileClip для работы с видеофайлом
 
     def converter_file(
@@ -49,7 +52,10 @@ class VideoConverter:
         try:                
             # Проверяем на допустимость формата
             if target_format in POSSIBLE_AUDIO_FORMATS:
-                self.input_video_file.audio.write_audiofile(path.join("..\\temp_videos\\", f"{new_filename}.{target_format}")) # Возвращаем измененный файл аудио формата 
+                output_dir = Path("temp_videos")        
+                output_path = output_dir / f"{new_filename}.{target_format}"
+                self.input_video_file.audio.write_audiofile(str(output_path)) # Возвращаем измененный файл аудио формата 
+                return str(output_path)
             else:
                 #TODO : добавить связь с ботом о ошибке формата
                 pass
