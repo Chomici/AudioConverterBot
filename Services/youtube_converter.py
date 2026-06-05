@@ -3,12 +3,15 @@ from pytubefix import YouTube
 from pathlib import Path # для отправки в temp_videos
 from urllib.parse import urlparse
 
+from video_converter import VideoConverter
+
+OUTPUT_DIR = Path("..\\temp_videos")
+
 class YoutubeConverter:
     """
     Класс для работы с URL
     """
-    def __init__(self, url: str):
-        self.output_dir = Path("..\\temp_videos")        
+    def __init__(self, url: str):        
         
         if self.is_valid_url(url):
             self.url = url
@@ -52,11 +55,35 @@ class YoutubeConverter:
         """
         return YouTube(url=self.url)
 
-    def downoload_file(self):
+    def save_video_captions(
+            self, 
+            filename: str | None = None, 
+            path: Path = OUTPUT_DIR, 
+            lang: str = "ru"
+            ):
+        """
+        Сохраняет субтитры Youtube видео
+        """
+        caption = self.get_video_caption_by_lang_code(lang=lang)
+        if caption is None:
+            raise ValueError("Субтитров не существует")
+
+        if filename is None:
+            filename = self.youtube_object.title.strip()
+        
+        caption.save_captions(filename=filename)
+    
+    def get_video_caption_by_lang_code(self, lang: str = "ru"):
+        """
+        Возвращает обьект Caption если субтитры существуют, если нет то возвращает None
+        """
+        return self.youtube_object.captions.get(lang, None)
+    
+    def download_file(self, filename: str | None = None):
         """
         Производит скачивание файла
         """
-        self.youtube_object.streams.get_lowest_resolution().download(output_path=self.output_dir) # Важное уточнее что output_path это директория а не конечное имя
+        self.youtube_object.streams.get_lowest_resolution().download(output_path=OUTPUT_DIR, filename=filename) # Важное уточнее что output_path это директория а не конечное имя
 
     def is_valid_url(self, url: str):
         """
@@ -68,3 +95,13 @@ class YoutubeConverter:
             return all([result.scheme, result.netloc])
         except Exception:
             return False
+
+"""
+Для тестов оставил
+
+test1 = YoutubeConverter(url="https://music.youtube.com/watch?v=mRXRg6fR-nU&list=RDAMVMmRXRg6fR-nU")
+test1.download_file(filename='Дотка.mp4')
+test1 = VideoConverter(filename="Дотка.mp4")
+test1.converter_file(new_filename='ТестНовойФичи', target_format='mp3')
+
+"""

@@ -9,6 +9,8 @@ POSSIBLE_AUDIO_FORMATS = [ # Взято из use-case
     "ogg"
 ]
 
+OUTPUT_DIR = Path("..\\temp_videos")
+
 class VideoConverter:
     """
     Класс для работы с видеофайлами
@@ -26,10 +28,11 @@ class VideoConverter:
             
         self.file_format = regex_file_format.group(0)[1:] # Формат файла, полученный из регулярного выражения без точки
         
-        file_path = Path(filename)
+        file_path = Path(f"..\\temp_videos\\{filename}")
+
         self.filename = file_path.stem # Исходное имя файла без расширения
         
-        self.input_video_file = VideoFileClip(f"{filename}") # Обьект типа VideoFileClip для работы с видеофайлом
+        self.input_video_file = VideoFileClip(str(file_path)) # Обьект типа VideoFileClip для работы с видеофайлом
 
     def converter_file(
             self,
