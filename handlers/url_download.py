@@ -66,10 +66,3 @@ async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.answer("Сделано с душой)")
 
     await state.clear()
-
-
-@router.callback_query(F.data == "main_menu", StateFilter(URLDownloadState.waiting_url))
-async def to_main_menu(callback: types.CallbackQuery, state: FSMContext):
-    await state.clear()
-    await callback.answer()
-    await callback.message.edit_text("Выберите действие:", reply_markup=get_menu_keyboard())

@@ -45,13 +45,6 @@ async def back_to_choice(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.edit_text("Выберите действие:", reply_markup=get_file_choice_keyboard())
 
 
-@router.callback_query(F.data == "main_menu", StateFilter(FileDownloadState.waiting_file))
-async def to_main_menu(callback: types.CallbackQuery, state: FSMContext):
-    await state.clear()
-    await callback.answer()
-    await callback.message.edit_text("Выберите действие:", reply_markup=get_menu_keyboard())
-
-
 # StateFilter гарантирует, что обработчик сработает только в нужном состоянии FSM.
 # Могут прислать либо несжатый(document), либо сжатый(video) файл
 @router.message(F.document | F.video, StateFilter(FileDownloadState.waiting_file))

@@ -2,6 +2,7 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram import types
 from aiogram import F
+from aiogram.fsm.context import FSMContext
 
 from keyboards.menu import get_menu_keyboard, get_file_choice_keyboard, get_url_choice_keyboard
 
@@ -52,6 +53,14 @@ async def show_url_choice(callback: types.CallbackQuery):
 
 @router.callback_query(F.data == "back")
 async def handle_back(callback: types.CallbackQuery):
+    await callback.answer()
+    await callback.message.edit_text("Выберите действие:", reply_markup=get_menu_keyboard())
+
+
+# Выход в главное меня отработает из любого роутера
+@router.callback_query(F.data == "main_menu")
+async def to_main_menu(callback: types.CallbackQuery, state: FSMContext):
+    await state.clear()
     await callback.answer()
     await callback.message.edit_text("Выберите действие:", reply_markup=get_menu_keyboard())
 
