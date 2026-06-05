@@ -1,0 +1,29 @@
+import pytube
+
+from re import search # для обрезки расширения файла
+from pathlib import Path # для отправки в temp_videos
+from urllib.parse import urlparse
+
+class UrlConverter:
+    """
+    Класс для работы с URL
+    """
+    def __init__(self, url: str):
+        if self.is_valid_url(url):
+            self.url = url
+        else:
+            raise ValueError("Недопустимый URL")
+
+    def downoload_file(self):
+        pass
+
+    def is_valid_url(self, url: str):
+        """
+        Проверяет существует ли заданные домен
+        """
+        try:
+            result = urlparse(url)
+            # Проверяем есть ли и протокол, и домен
+            return all([result.scheme, result.netloc])
+        except Exception:
+            return False
