@@ -54,6 +54,43 @@ class YoutubeConverter:
         """
         return YouTube(url=self.url)
 
+    def get_available_streams(self) -> dict:
+        """
+        Возвращает доступные потоки для скачивания Youtube видео
+        """
+        return {
+            "video": list(self.youtube_object.streams.filter(only_video=True)),
+            "audio": list(self.youtube_object.streams.filter(only_audio=True)),
+            "both": list(self.youtube_object.streams.filter(progressive=True))
+        }
+    
+    def download_with_quality(
+            self,
+            filename: str | None = None,
+            quality: str = "lowest", # lowest, highest, audio_only
+            audio_quality: str = "medium"  # low, medium, high
+        ):
+        """Скачивает файл с выбором качества"""
+        if quality == "lowest":
+                stream = self.youtube_object.streams.get_lowest_resolution()
+        elif quality == "highest":
+                stream = self.youtube_object.streams.get_highest_resolution()
+        elif quality == "audio_only":
+            # Выбираем качество аудио
+            audio_bitrates = {"low": "64kbps", "medium": "128kbps", "high": "160kbps"}
+            stream = self.youtube_object.streams.filter(
+                only_audio=True, 
+                abr=audio_bitrates.get(audio_quality, "128kbps")
+            ).first()
+        else:
+            raise ValueError(f"Неизвестное качество: {quality}")
+            
+        if not stream:
+            raise ValueError(f"Не удалось найти поток с качеством {quality}")
+            
+        stream.download(output_path=OUTPUT_DIR, filename=filename)
+        return stream
+
     def save_video_captions(
             self, 
             filename: str | None = None, 
@@ -80,7 +117,7 @@ class YoutubeConverter:
     
     def download_file(self, filename: str | None = None):
         """
-        Производит скачивание файла
+        Производит скачивание файла (Устраревшая версия пользоваться лучше download_with_quality)
         """
         self.youtube_object.streams.get_lowest_resolution().download(output_path=OUTPUT_DIR, filename=filename) # Важное уточнее что output_path это директория а не конечное имя
 
