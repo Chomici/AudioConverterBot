@@ -55,3 +55,10 @@ def get_audio_format_keyboard() -> InlineKeyboardMarkup:
     builder.button(text="MP3", callback_data="mp3")
 
     return builder.as_markup()
+
+
+def get_video_format_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text="MP4", callback_data="mp4")
+
+    return builder.as_markup()
