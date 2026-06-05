@@ -1,15 +1,7 @@
 from re import search # для обрезки расширения файла
 from pathlib import Path # для отправки в temp_videos
 from moviepy import VideoFileClip
-
-POSSIBLE_AUDIO_FORMATS = [ # Взято из use-case
-    "mp3", 
-    "wav",
-    "flac",
-    "ogg"
-]
-
-OUTPUT_DIR = Path("..\\temp_videos")
+from config import *
 
 class VideoConverter:
     """

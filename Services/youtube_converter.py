@@ -2,10 +2,9 @@ from pytubefix import YouTube
 
 from pathlib import Path # для отправки в temp_videos
 from urllib.parse import urlparse
+from config import *
 
-from video_converter import VideoConverter
-
-OUTPUT_DIR = Path("..\\temp_videos")
+# from video_converter import VideoConverter
 
 class YoutubeConverter:
     """
