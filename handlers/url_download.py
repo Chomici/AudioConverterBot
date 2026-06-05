@@ -43,6 +43,11 @@ async def handle_paste_url(message: types.Message, state: FSMContext):
         await message.answer("Выберите формат аудиофайла:", reply_markup=get_audio_format_keyboard())
 
 
+@router.message(StateFilter(URLDownloadState.waiting_url))
+async def handle_invalid_url(message: types.Message):
+    await message.answer("Неверная ссылка, повторите ещё раз.")
+
+
 @router.callback_query(F.data == "mp4", StateFilter(URLDownloadState.waiting_video_format))
 async def upload_video(callback: types.CallbackQuery, state: FSMContext):
     # Заглушка, просто возврат ссылки
