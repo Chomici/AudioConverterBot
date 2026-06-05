@@ -1,4 +1,4 @@
-import pytube
+from pytubefix import YouTube
 
 from re import search # для обрезки расширения файла
 from pathlib import Path # для отправки в temp_videos
@@ -13,9 +13,14 @@ class UrlConverter:
             self.url = url
         else:
             raise ValueError("Недопустимый URL")
-
+        
     def downoload_file(self):
-        pass
+        """
+        Производит скачивание файла
+        """
+        yt = YouTube(url=self.url)
+        output_dir = Path("..\\temp_videos")        
+        yt.streams.get_lowest_resolution().download(output_path=output_dir) # Важное уточнее что output_path это директория а не конечное имя
 
     def is_valid_url(self, url: str):
         """

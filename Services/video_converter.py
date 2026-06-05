@@ -52,7 +52,7 @@ class VideoConverter:
         try:                
             # Проверяем на допустимость формата
             if target_format in POSSIBLE_AUDIO_FORMATS:
-                output_dir = Path("temp_videos")        
+                output_dir = Path("..\\temp_videos")        
                 output_path = output_dir / f"{new_filename}.{target_format}"
                 self.input_video_file.audio.write_audiofile(str(output_path)) # Возвращаем измененный файл аудио формата 
                 return str(output_path)
