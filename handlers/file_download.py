@@ -8,7 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 
 from keyboards.menu import get_menu_keyboard, get_audio_format_keyboard
-from keyboards.menu import get_upload_prompt_keyboard, get_file_choice_keyboard
+from keyboards.menu import get_back_keyboard, get_file_choice_keyboard
 from states.file_download import FileDownloadState
 
 router = Router()
@@ -21,10 +21,10 @@ async def show_upload_file_prompt(event: types.Message | types.CallbackQuery, st
     # Из-за разных способов ответа Message и CallbackQuery проверяем тип события
     if isinstance(event, types.Message):
         await event.answer("Отправьте видео файл одного из поддерживаемых параметров:",
-                           reply_markup=get_upload_prompt_keyboard())
+                           reply_markup=get_back_keyboard())
     else:
         await event.message.edit_text("Отправьте видео файл одного из поддерживаемых параметров:",
-                                      reply_markup=get_upload_prompt_keyboard())
+                                      reply_markup=get_back_keyboard())
 
 
 @router.message(Command("uploadfile"))

@@ -34,15 +34,7 @@ def get_url_choice_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_upload_prompt_keyboard() -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    builder.button(text="Назад", callback_data="back")
-    builder.button(text="В главное меню", callback_data="main_menu")
-
-    return builder.as_markup()
-
-
-def get_paste_url_keyboard() -> InlineKeyboardMarkup:
+def get_back_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text="Назад", callback_data="back")
     builder.button(text="В главное меню", callback_data="main_menu")

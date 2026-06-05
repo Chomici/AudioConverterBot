@@ -3,7 +3,7 @@ from aiogram import types, Router
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 
-from keyboards.menu import get_menu_keyboard, get_paste_url_keyboard, get_url_choice_keyboard
+from keyboards.menu import get_menu_keyboard, get_back_keyboard, get_url_choice_keyboard
 from keyboards.menu import get_audio_format_keyboard, get_video_format_keyboard
 from states.url_download import URLDownloadState
 
@@ -18,7 +18,7 @@ async def show_paste_url_prompt(callback: types.CallbackQuery, state: FSMContext
 
     await callback.answer()
     await callback.message.edit_text("Вставьте ссылку на ваше видео (Youtube):",
-                                     reply_markup=get_paste_url_keyboard())
+                                     reply_markup=get_back_keyboard())
 
 
 @router.callback_query(F.data == "back", StateFilter(URLDownloadState.waiting_url))
