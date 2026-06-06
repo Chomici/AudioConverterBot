@@ -1,6 +1,8 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from Services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_FORMATS
+
 
 def get_menu_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
@@ -44,13 +46,23 @@ def get_back_keyboard() -> InlineKeyboardMarkup:
 
 def get_audio_format_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    builder.button(text="MP3", callback_data="mp3")
+
+    # Если будут новые форматы для удобства добавления новых
+    for audio_type in POSSIBLE_AUDIO_FORMATS:
+        builder.button(text=audio_type.upper(), callback_data=audio_type.lower())
+
+    # Автоматически ставит максимум 2 кнопки в ряд
+    builder.adjust(2)
 
     return builder.as_markup()
 
 
 def get_video_format_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    builder.button(text="MP4", callback_data="mp4")
+
+    for video_type in POSSIBLE_VIDEO_FORMATS:
+        builder.button(text=video_type.upper(), callback_data=video_type.lower())
+
+    builder.adjust(2)
 
     return builder.as_markup()
