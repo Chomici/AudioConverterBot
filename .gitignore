@@ -78,3 +78,6 @@ out/
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# Temporary videos directory
+temp_videos/
