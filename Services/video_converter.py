@@ -1,61 +1,66 @@
-from re import search # для обрезки расширения файла
-from pathlib import Path # для отправки в temp_videos
+from re import search  # для обрезки расширения файла
 from moviepy import VideoFileClip
 from config import *
 
+
 class VideoConverter:
     """
-    Класс для работы с видеофайлами
+    Класс для работы с видео файлами
     """
-    def __init__(
-            self,
-            filename: str, # Имя файла для обработки
-            ):
-        
-        regex_file_format = search(r'\.\w*$', filename) # SRE_Match Обьект хранящий индекс и информацию о расширении
-        
-        # Проверка не пустое ли руглярное выражение
+
+    def __init__(self, filename: str):
+        # SRE_Match - объект хранящий индекс и информацию о расширении
+        regex_file_format = search(r'\.\w*$', filename)
+
+        # Проверка не пустое ли регулярное выражение
         if regex_file_format is None:
-            raise ValueError("Файл без формата") 
-            
-        self.file_format = regex_file_format.group(0)[1:] # Формат файла, полученный из регулярного выражения без точки
-        
+            raise ValueError("Файл без формата")
+
+        # Формат файла, полученный из регулярного выражения без точки
+        self.file_format = regex_file_format.group(0)[1:]
         file_path = Path(f"..\\temp_videos\\{filename}")
 
-        self.filename = file_path.stem # Исходное имя файла без расширения
-        
-        self.input_video_file = VideoFileClip(str(file_path)) # Обьект типа VideoFileClip для работы с видеофайлом
+        # Исходное имя файла без расширения
+        self.filename = file_path.stem
+
+        # Объект типа VideoFileClip для работы с видео файлом
+        self.input_video_file = VideoFileClip(str(file_path))
 
     def converter_file(
-            self,
-            new_filename: str = None, # Новое имя для файла
-            target_format: str = "mp3" # Новый формат для файла
+        self,
+        new_filename: str = None,  # Новое имя для файла
+        target_format: str = "mp3"  # Новый формат для файла
     ):
         """
-        Принимает новое имя файла и формат файла... Возвращает его в новом формате 
+        Принимает новое имя файла и формат файла... возвращает его в новом формате
         """
-        target_format = target_format.lower() # Делаем все буквы строчными чтобы избежать ошибки с POSSIBLE_AUDIO_FORMATS
- 
-        if not new_filename: # Проверяем было ли передано имя в метод, если нет то берем изначальное имя
+        # Делаем все буквы строчными, чтобы избежать ошибки с POSSIBLE_AUDIO_FORMATS
+        target_format = target_format.lower()
+
+        # Проверяем было ли передано имя в метод, если нет, то берем изначальное имя
+        if not new_filename:
             new_filename = self.filename
 
-        # Проверяем на наличие аудиодорожки у видеофайла
+        # Проверяем на наличие аудиодорожки у видео файла
         if self.input_video_file.audio is None:
             raise ValueError("Файл не содержит аудио дорожку")
 
-        # Конвертация в аудиоформат
-        try:                
+        # Конвертация в аудио формат
+        try:
             # Проверяем на допустимость формата
             if target_format in POSSIBLE_AUDIO_FORMATS:
-                output_dir = Path("..\\temp_videos")        
+                output_dir = Path("..\\temp_videos")
                 output_path = output_dir / f"{new_filename}.{target_format}"
-                self.input_video_file.audio.write_audiofile(str(output_path)) # Возвращаем измененный файл аудио формата 
+
+                # Возвращаем измененный файл аудио формата
+                self.input_video_file.audio.write_audiofile(str(output_path))
+
                 return str(output_path)
             else:
-                #TODO : добавить связь с ботом о ошибке формата
+                # TODO : добавить связь с ботом о ошибке формата
                 pass
         except Exception as ex:
-            print(ex) 
+            print(ex)
         finally:
             self.close()
 
