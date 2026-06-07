@@ -1,6 +1,6 @@
 from re import search  # для обрезки расширения файла
 from moviepy import VideoFileClip
-from config import *
+from Services.config import *
 
 
 class VideoConverter:
@@ -18,7 +18,10 @@ class VideoConverter:
 
         # Формат файла, полученный из регулярного выражения без точки
         self.file_format = regex_file_format.group(0)[1:]
-        file_path = Path(f"..\\temp_videos\\{filename}")
+
+        # Убираем выход из папки, ибо запуск бота из main.py,
+        # который на уровне с temp_videos
+        file_path = Path(f"temp_videos\\{filename}")
 
         # Исходное имя файла без расширения
         self.filename = file_path.stem
@@ -49,7 +52,7 @@ class VideoConverter:
         try:
             # Проверяем на допустимость формата
             if target_format in POSSIBLE_AUDIO_FORMATS:
-                output_dir = Path("..\\temp_videos")
+                output_dir = Path("temp_videos")
                 output_path = output_dir / f"{new_filename}.{target_format}"
 
                 # Возвращаем измененный файл аудио формата

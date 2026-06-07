@@ -7,9 +7,12 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 
-from keyboards.menu import get_menu_keyboard, get_audio_format_keyboard
+from keyboards.menu import get_audio_format_keyboard
 from keyboards.menu import get_back_keyboard, get_file_choice_keyboard
 from states.file_download import FileDownloadState
+
+from Services.config import POSSIBLE_AUDIO_FORMATS
+from Services.video_converter import VideoConverter
 
 router = Router()
 
@@ -62,27 +65,37 @@ async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext
 
     await message.answer("Скачивается...")
     # Если телеграм не дал имя файлу, генерируем
-    file_name = getattr(file, "file_name", None) or f"{uuid.uuid4()}.mp4"
+    file_name = getattr(file, "file_name", None) or f"{uuid.uuid4()}"
     await bot.download(file.file_id, destination=f"temp_videos/{file_name}", timeout=300)
 
-    # Пока что отправляем тот же видос
-    await state.update_data(full_name=f"temp_videos/{file_name}")
+    # Сохраняем имя файла для класса VideoConverter
+    await state.update_data(full_name=file_name)
     await state.set_state(FileDownloadState.waiting_file_format)
 
     await message.answer("Готово! Выберите формат аудиофайла: ",
                          reply_markup=get_audio_format_keyboard())
 
 
-@router.callback_query(F.data == "mp3", StateFilter(FileDownloadState.waiting_file_format))
+@router.callback_query(F.data.in_(POSSIBLE_AUDIO_FORMATS), StateFilter(FileDownloadState.waiting_file_format))
 async def return_audio(callback: types.CallbackQuery, state: FSMContext):
     # Пока что отправляем тот же видос
     file_name = await state.get_value("full_name")
-    audio = FSInputFile(file_name)
+
+    # Нужно будет вынести код в async
+    video = VideoConverter(filename=file_name)
+    video.converter_file(new_filename=file_name.split(".")[0], target_format=callback.data)
+
+    audio = FSInputFile(f"temp_videos/{file_name.split(".")[0]}.{callback.data}")
 
     await callback.answer()
     await callback.message.answer_document(document=audio, caption="Сделано с душой)")
 
-    if os.path.exists(file_name):
-        os.remove(file_name)
+    # Нужно будет поправить константу с путем.
+    # Чистим видео файл
+    if os.path.exists(f"temp_videos/{file_name}"):
+        os.remove(f"temp_videos/{file_name}")
+    # Чистим аудио файл
+    if os.path.exists(f"temp_videos/{file_name.split(".")[0]}.{callback.data}"):
+        os.remove(f"temp_videos/{file_name.split(".")[0]}.{callback.data}")
 
     await state.clear()
