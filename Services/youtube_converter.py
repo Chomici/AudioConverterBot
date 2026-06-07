@@ -1,8 +1,7 @@
 from pytubefix import YouTube
 from urllib.parse import urlparse
-from config import *
+from Services.config import *
 
-from video_converter import VideoConverter
 
 
 class YoutubeConverter:
@@ -119,7 +118,7 @@ class YoutubeConverter:
         Производит скачивание файла (Устаревшая версия: лучше пользоваться download_with_quality)
         """
         # Важное уточнение: output_path - это директория, а не конечное имя
-        self.youtube_object.streams.get_lowest_resolution().download(output_path=OUTPUT_DIR, filename=filename)
+        self.youtube_object.streams.get_lowest_resolution().download(output_path="temp_videos", filename=filename)
 
     def is_valid_url(self, url: str):
         """
