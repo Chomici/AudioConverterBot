@@ -12,12 +12,12 @@ class VideoConverter:
         # SRE_Match - объект хранящий индекс и информацию о расширении
         regex_file_format = search(r'\.\w*$', filename)
 
-        # Проверка не пустое ли регулярное выражение
+        # Записанные в телеге видео не имеют имени и формата, по умолчанию mp4
         if regex_file_format is None:
-            raise ValueError("Файл без формата")
-
-        # Формат файла, полученный из регулярного выражения без точки
-        self.file_format = regex_file_format.group(0)[1:]
+            self.file_format = "mp4"
+        else:
+            # Формат файла, полученный из регулярного выражения без точки
+            self.file_format = regex_file_format.group(0)[1:]
 
         # Убираем выход из папки, ибо запуск бота из main.py,
         # который на уровне с temp_videos
