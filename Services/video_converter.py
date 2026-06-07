@@ -51,7 +51,7 @@ class VideoConverter:
         # Конвертация в аудио формат
         try:
             # Проверяем на допустимость формата
-            if target_format in POSSIBLE_AUDIO_FORMATS:
+            if target_format in list(POSSIBLE_AUDIO_CODECS.keys()):
                 output_dir = Path("temp_videos")
                 output_path = output_dir / f"{new_filename}.{target_format}"
 

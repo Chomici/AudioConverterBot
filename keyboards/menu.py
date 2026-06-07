@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from Services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_FORMATS
+from Services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS
 
 
 def get_menu_keyboard() -> InlineKeyboardMarkup:
@@ -48,7 +48,7 @@ def get_audio_format_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
     # Если будут новые форматы для удобства добавления новых
-    for audio_type in POSSIBLE_AUDIO_FORMATS:
+    for audio_type in list(POSSIBLE_AUDIO_CODECS.keys()):
         builder.button(text=audio_type.upper(), callback_data=audio_type.lower())
 
     # Автоматически ставит максимум 2 кнопки в ряд

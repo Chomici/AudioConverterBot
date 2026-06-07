@@ -10,7 +10,7 @@ from keyboards.menu import get_back_keyboard, get_url_choice_keyboard
 from keyboards.menu import get_audio_format_keyboard, get_video_format_keyboard
 from states.url_download import URLDownloadState
 
-from Services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_FORMATS
+from Services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS
 from Services.youtube_converter import YoutubeConverter
 
 router = Router()
@@ -74,7 +74,8 @@ async def upload_video(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
 
 
-@router.callback_query(F.data.in_(POSSIBLE_AUDIO_FORMATS), StateFilter(URLDownloadState.waiting_audio_format))
+@router.callback_query(F.data.in_(list(POSSIBLE_AUDIO_CODECS.keys())),
+                       StateFilter(URLDownloadState.waiting_audio_format))
 async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
     url = await state.get_value('url')
 

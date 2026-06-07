@@ -11,7 +11,7 @@ from keyboards.menu import get_audio_format_keyboard
 from keyboards.menu import get_back_keyboard, get_file_choice_keyboard
 from states.file_download import FileDownloadState
 
-from Services.config import POSSIBLE_AUDIO_FORMATS
+from Services.config import POSSIBLE_AUDIO_CODECS
 from Services.video_converter import VideoConverter
 
 router = Router()
@@ -76,7 +76,8 @@ async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext
                          reply_markup=get_audio_format_keyboard())
 
 
-@router.callback_query(F.data.in_(POSSIBLE_AUDIO_FORMATS), StateFilter(FileDownloadState.waiting_file_format))
+@router.callback_query(F.data.in_(list(POSSIBLE_AUDIO_CODECS.keys())),
+                       StateFilter(FileDownloadState.waiting_file_format))
 async def return_audio(callback: types.CallbackQuery, state: FSMContext):
     # Пока что отправляем тот же видос
     file_name = await state.get_value("full_name")
