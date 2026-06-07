@@ -87,19 +87,34 @@ class YoutubeConverter:
         if not stream:
             raise ValueError(f"Не удалось найти поток с качеством {quality}")
 
-        # Скачиваем временный файл, чтобы корректно его кодировать
-        stream.download(output_path="temp_videos", filename=f"temp_{filename}")
+        # Для безопасности чтения сохраняем временный файл с родным расширением потока
+        temp_filename = f"temp_{filename.rsplit(".", 1)[0]}.{stream.subtype}"
+        stream.download(output_path="temp_videos", filename=temp_filename)
 
-        # AudioFileClip нужен, чтобы не терять метаданные файла
-        # (В прошлой версии кода не было информации про длительность и битрейт)
-        audio = AudioFileClip(f"temp_videos/temp_{filename}")
-        audio.write_audiofile(
-            str(f"temp_videos/{filename}"),
-            codec="libmp3lame",  # Кодек определяет формат и не отбрасывает нужные метаданные
-            bitrate="192k",
-            logger=None
-        )
-        audio.close()
+        # Получаем формат
+        target_format = filename.rsplit(".", 1)[-1].lower()
+
+        if target_format in POSSIBLE_AUDIO_CODECS:
+            codec_settings = POSSIBLE_AUDIO_CODECS[target_format]
+
+            # AudioFileClip нужен, чтобы не терять метаданные файла
+            audio = AudioFileClip(f"temp_videos/{temp_filename}")
+
+            # Аргументы для кодировки файла
+            write_args = {
+                "filename": f"temp_videos/{filename}",
+                "codec": codec_settings["codec"],
+                "logger": None
+            }
+
+            # Если для формата нужен битрейт (для wav/flac он не нужен)
+            if codec_settings["bitrate"]:
+                write_args["bitrate"] = codec_settings["bitrate"]
+
+            audio.write_audiofile(**write_args)
+            audio.close()
+        else:
+            raise ValueError(f"Неподдерживаемый формат аудио: {target_format}")
 
         return stream
 
