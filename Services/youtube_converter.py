@@ -2,6 +2,7 @@ from pytubefix import YouTube
 from urllib.parse import urlparse
 from Services.config import *
 
+from moviepy import AudioFileClip
 
 
 class YoutubeConverter:
@@ -86,7 +87,20 @@ class YoutubeConverter:
         if not stream:
             raise ValueError(f"Не удалось найти поток с качеством {quality}")
 
-        stream.download(output_path="temp_videos", filename=filename)
+        # Скачиваем временный файл, чтобы корректно его кодировать
+        stream.download(output_path="temp_videos", filename=f"temp_{filename}")
+
+        # AudioFileClip нужен, чтобы не терять метаданные файла
+        # (В прошлой версии кода не было информации про длительность и битрейт)
+        audio = AudioFileClip(f"temp_videos/temp_{filename}")
+        audio.write_audiofile(
+            str(f"temp_videos/{filename}"),
+            codec="libmp3lame",  # Кодек определяет формат и не отбрасывает нужные метаданные
+            bitrate="192k",
+            logger=None
+        )
+        audio.close()
+
         return stream
 
     def save_video_captions(
