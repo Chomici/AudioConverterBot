@@ -86,7 +86,7 @@ class YoutubeConverter:
         if not stream:
             raise ValueError(f"Не удалось найти поток с качеством {quality}")
 
-        stream.download(output_path=OUTPUT_DIR, filename=filename)
+        stream.download(output_path="temp_videos", filename=filename)
         return stream
 
     def save_video_captions(

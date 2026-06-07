@@ -10,7 +10,7 @@ from keyboards.menu import get_back_keyboard, get_url_choice_keyboard
 from keyboards.menu import get_audio_format_keyboard, get_video_format_keyboard
 from states.url_download import URLDownloadState
 
-from Services.config import POSSIBLE_VIDEO_FORMATS
+from Services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_FORMATS
 from Services.youtube_converter import YoutubeConverter
 
 router = Router()
@@ -74,11 +74,21 @@ async def upload_video(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
 
 
-@router.callback_query(F.data == "mp3", StateFilter(URLDownloadState.waiting_audio_format))
+@router.callback_query(F.data.in_(POSSIBLE_AUDIO_FORMATS), StateFilter(URLDownloadState.waiting_audio_format))
 async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
-    # Заглушка, просто возврат ссылки
+    url = await state.get_value('url')
+
+    video = YoutubeConverter(url=url)
+    file_name = video.get_video_title()
+    video.download_with_quality(filename=f"{file_name}.{callback.data}", quality="audio_only")
+
+    audio_path = FSInputFile(f"temp_videos/{file_name}.{callback.data}")
+
     await callback.answer()
-    await callback.message.answer(f"{await state.get_value('url')}")
-    await callback.message.answer("Сделано с душой)")
+    await callback.message.answer_document(document=audio_path, caption="Сделано с душой)")
+
+    # Чистим аудио файл
+    if os.path.exists(f"temp_videos/{file_name}.{callback.data}"):
+        os.remove(f"temp_videos/{file_name}.{callback.data}")
 
     await state.clear()
