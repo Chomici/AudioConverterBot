@@ -21,7 +21,7 @@ class VideoConverter:
 
         # Убираем выход из папки, ибо запуск бота из main.py,
         # который на уровне с temp_videos
-        file_path = Path(f"temp_videos\\{filename}")
+        file_path = Path(OUTPUT_DIR / filename)
 
         # Исходное имя файла без расширения
         self.filename = file_path.stem
@@ -52,8 +52,7 @@ class VideoConverter:
         try:
             # Проверяем на допустимость формата
             if target_format in list(POSSIBLE_AUDIO_CODECS.keys()):
-                output_dir = Path("temp_videos")
-                output_path = output_dir / f"{new_filename}.{target_format}"
+                output_path = OUTPUT_DIR / f"{new_filename}.{target_format}"
 
                 # Возвращаем измененный файл аудио формата
                 self.input_video_file.audio.write_audiofile(str(output_path))

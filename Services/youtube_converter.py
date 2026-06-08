@@ -89,7 +89,7 @@ class YoutubeConverter:
 
         # Для безопасности чтения сохраняем временный файл с родным расширением потока
         temp_filename = f"temp_{filename.rsplit(".", 1)[0]}.{stream.subtype}"
-        stream.download(output_path="temp_videos", filename=temp_filename)
+        stream.download(output_path=str(OUTPUT_DIR), filename=temp_filename)
 
         # Получаем формат
         target_format = filename.rsplit(".", 1)[-1].lower()
@@ -98,11 +98,11 @@ class YoutubeConverter:
             codec_settings = POSSIBLE_AUDIO_CODECS[target_format]
 
             # AudioFileClip нужен, чтобы не терять метаданные файла
-            audio = AudioFileClip(f"temp_videos/{temp_filename}")
+            audio = AudioFileClip(str(OUTPUT_DIR / temp_filename))
 
             # Аргументы для кодировки файла
             write_args = {
-                "filename": f"temp_videos/{filename}",
+                "filename": str(OUTPUT_DIR / filename),
                 "codec": codec_settings["codec"],
                 "logger": None
             }
@@ -147,7 +147,7 @@ class YoutubeConverter:
         Производит скачивание файла (Устаревшая версия: лучше пользоваться download_with_quality)
         """
         # Важное уточнение: output_path - это директория, а не конечное имя
-        self.youtube_object.streams.get_lowest_resolution().download(output_path="temp_videos", filename=filename)
+        self.youtube_object.streams.get_lowest_resolution().download(output_path=str(OUTPUT_DIR), filename=filename)
 
     def is_valid_url(self, url: str):
         """

@@ -1,6 +1,7 @@
 from pathlib import Path
 
-OUTPUT_DIR = Path("..\\temp_videos")
+# Так как бот запускается из main.py, выход из папки Services не нужен
+OUTPUT_DIR = Path("temp_videos")
 
 # Для корректной конвертации по ссылке через YoutubeConverter
 POSSIBLE_AUDIO_CODECS = {  # Взято из use-case
