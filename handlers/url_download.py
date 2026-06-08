@@ -91,7 +91,3 @@ async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
     # Чистим аудио файл
     if os.path.exists(f"temp_videos/{file_name}.{callback.data}"):
         os.remove(f"temp_videos/{file_name}.{callback.data}")
-
-    # Чистим временный аудио файл
-    if os.path.exists(f"temp_videos/temp_{file_name}.mp4"):
-        os.remove(f"temp_videos/temp_{file_name}.mp4")

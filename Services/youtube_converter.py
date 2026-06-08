@@ -75,7 +75,6 @@ class YoutubeConverter:
         elif quality == "highest":
             stream = self.youtube_object.streams.get_highest_resolution()
         elif quality == "audio_only":
-            # Выбираем качество аудио
             audio_bitrates = {"low": "64kbps", "medium": "128kbps", "high": "160kbps"}
             stream = self.youtube_object.streams.filter(
                 only_audio=True,
@@ -87,34 +86,45 @@ class YoutubeConverter:
         if not stream:
             raise ValueError(f"Не удалось найти поток с качеством {quality}")
 
+        file_path = Path(filename)
+        base_name = file_path.stem  # Имя без расширения
+        target_format = file_path.suffix.lstrip('.').lower()  # Расширение без точки
+
         # Для безопасности чтения сохраняем временный файл с родным расширением потока
-        temp_filename = f"temp_{filename.rsplit(".", 1)[0]}.{stream.subtype}"
+        temp_filename = f"temp_{base_name}.{stream.subtype}"
+        temp_file_path = OUTPUT_DIR / temp_filename
+
+        # Скачиваем сырой поток с YouTube
         stream.download(output_path=str(OUTPUT_DIR), filename=temp_filename)
 
-        # Получаем формат
-        target_format = filename.rsplit(".", 1)[-1].lower()
+        # try-finally для гарантированной очистки временного файла
+        try:
+            if target_format in POSSIBLE_AUDIO_CODECS:
+                codec_settings = POSSIBLE_AUDIO_CODECS[target_format]
 
-        if target_format in POSSIBLE_AUDIO_CODECS:
-            codec_settings = POSSIBLE_AUDIO_CODECS[target_format]
+                # AudioFileClip нужен, чтобы не терять метаданные файла
+                audio = AudioFileClip(str(temp_file_path))
 
-            # AudioFileClip нужен, чтобы не терять метаданные файла
-            audio = AudioFileClip(str(OUTPUT_DIR / temp_filename))
+                # Аргументы для кодировки файла
+                write_args = {
+                    "filename": str(OUTPUT_DIR / filename),
+                    "codec": codec_settings["codec"],
+                    "logger": None
+                }
 
-            # Аргументы для кодировки файла
-            write_args = {
-                "filename": str(OUTPUT_DIR / filename),
-                "codec": codec_settings["codec"],
-                "logger": None
-            }
+                # Если для формата нужен битрейт (для wav/flac он не нужен)
+                if codec_settings["bitrate"]:
+                    write_args["bitrate"] = codec_settings["bitrate"]
 
-            # Если для формата нужен битрейт (для wav/flac он не нужен)
-            if codec_settings["bitrate"]:
-                write_args["bitrate"] = codec_settings["bitrate"]
+                audio.write_audiofile(**write_args)
+                audio.close()
+            else:
+                raise ValueError(f"Неподдерживаемый формат аудио: {target_format}")
 
-            audio.write_audiofile(**write_args)
-            audio.close()
-        else:
-            raise ValueError(f"Неподдерживаемый формат аудио: {target_format}")
+        # Конечная очистка временного файла
+        finally:
+            if temp_file_path.exists():
+                temp_file_path.unlink()
 
         return stream
 
