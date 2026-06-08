@@ -1,4 +1,4 @@
-import os
+import pathlib
 import uuid
 
 from aiogram import F
@@ -11,7 +11,7 @@ from keyboards.menu import get_audio_format_keyboard
 from keyboards.menu import get_back_keyboard, get_file_choice_keyboard
 from states.file_download import FileDownloadState
 
-from Services.config import POSSIBLE_AUDIO_CODECS
+from Services.config import POSSIBLE_AUDIO_CODECS, OUTPUT_DIR
 from Services.video_converter import VideoConverter
 
 router = Router()
@@ -66,7 +66,9 @@ async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext
     await message.answer("Скачивается...")
     # Если телеграм не дал имя файлу, генерируем
     file_name = getattr(file, "file_name", None) or f"{uuid.uuid4()}"
-    await bot.download(file.file_id, destination=f"temp_videos/{file_name}", timeout=300)
+
+    video_path = OUTPUT_DIR / file_name
+    await bot.download(file.file_id, destination=str(video_path), timeout=300)
 
     # Сохраняем имя файла для класса VideoConverter
     await state.update_data(full_name=file_name)
@@ -82,21 +84,26 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
     # Пока что отправляем тот же видос
     file_name = await state.get_value("full_name")
 
+    # Получаем имя без расширения
+    base_name = pathlib.Path(file_name).stem
+
+    video_path = OUTPUT_DIR / file_name
+    audio_path = OUTPUT_DIR / f"{base_name}.{callback.data}"
+
     # Нужно будет вынести код в async
     video = VideoConverter(filename=file_name)
-    video.converter_file(new_filename=file_name.split(".")[0], target_format=callback.data)
+    video.converter_file(new_filename=base_name, target_format=callback.data)
 
-    audio = FSInputFile(f"temp_videos/{file_name.split(".")[0]}.{callback.data}")
-
+    audio_file = FSInputFile(audio_path)
     await callback.answer()
-    await callback.message.answer_document(document=audio, caption="Сделано с душой)")
+    await callback.message.answer_document(document=audio_file, caption="Сделано с душой)")
 
-    # Нужно будет поправить константу с путем.
     # Чистим видео файл
-    if os.path.exists(f"temp_videos/{file_name}"):
-        os.remove(f"temp_videos/{file_name}")
+    if video_path.exists():
+        video_path.unlink()
+
     # Чистим аудио файл
-    if os.path.exists(f"temp_videos/{file_name.split(".")[0]}.{callback.data}"):
-        os.remove(f"temp_videos/{file_name.split(".")[0]}.{callback.data}")
+    if audio_path.exists():
+        audio_path.unlink()
 
     await state.clear()
