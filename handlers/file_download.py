@@ -87,7 +87,6 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
     # Получаем имя без расширения
     base_name = pathlib.Path(file_name).stem
 
-    video_path = OUTPUT_DIR / file_name
     audio_path = OUTPUT_DIR / f"{base_name}.{callback.data}"
 
     # Нужно будет вынести код в async
@@ -97,10 +96,6 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
     audio_file = FSInputFile(audio_path)
     await callback.answer()
     await callback.message.answer_document(document=audio_file, caption="Сделано с душой)")
-
-    # Чистим видео файл
-    if video_path.exists():
-        video_path.unlink()
 
     # Чистим аудио файл
     if audio_path.exists():

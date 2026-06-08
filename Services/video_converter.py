@@ -1,3 +1,4 @@
+import pathlib
 from re import search  # для обрезки расширения файла
 from moviepy import VideoFileClip
 from Services.config import *
@@ -57,14 +58,22 @@ class VideoConverter:
                 # Возвращаем измененный файл аудио формата
                 self.input_video_file.audio.write_audiofile(str(output_path))
 
+                # Файл нужно закрыть для правильной очистки временного видео
+                self.close()
+
+                # Конвертер будет чистить временное видео сам
+                temp_path = OUTPUT_DIR / f"{self.filename}.{self.file_format}"
+                if temp_path.exists():
+                    temp_path.unlink()
+
                 return str(output_path)
             else:
                 # TODO : добавить связь с ботом о ошибке формата
                 pass
         except Exception as ex:
-            print(ex)
-        finally:
+            # Если словили ошибку, то закроем здесь, если в блоке try не смогли
             self.close()
+            print(ex)
 
     def close(self):
         """
