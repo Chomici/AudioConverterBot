@@ -1,5 +1,3 @@
-import os
-
 from aiogram import F
 from aiogram import types, Router
 from aiogram.filters import StateFilter
@@ -10,7 +8,7 @@ from keyboards.menu import get_back_keyboard, get_url_choice_keyboard
 from keyboards.menu import get_audio_format_keyboard, get_video_format_keyboard
 from states.url_download import URLDownloadState
 
-from Services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS
+from Services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS, OUTPUT_DIR
 from Services.youtube_converter import YoutubeConverter
 
 router = Router()
@@ -62,14 +60,15 @@ async def upload_video(callback: types.CallbackQuery, state: FSMContext):
     file_name = video.get_video_title()
     video.download_file(filename=f"{file_name}.{callback.data}")
 
-    video_path = FSInputFile(f"temp_videos/{file_name}.{callback.data}")
+    video_path = OUTPUT_DIR / f"{file_name}.{callback.data}"
+    video_file = FSInputFile(video_path)
 
     await callback.answer()
-    await callback.message.answer_document(document=video_path, caption="Сделано с душой)")
+    await callback.message.answer_document(document=video_file, caption="Сделано с душой)")
 
     # Чистим видео файл
-    if os.path.exists(f"temp_videos/{file_name}.{callback.data}"):
-        os.remove(f"temp_videos/{file_name}.{callback.data}")
+    if video_path.exists():
+        video_path.unlink()
 
     await state.clear()
 
@@ -83,11 +82,12 @@ async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
     file_name = video.get_video_title()
     video.download_with_quality(filename=f"{file_name}.{callback.data}", quality="audio_only")
 
-    audio_path = FSInputFile(f"temp_videos/{file_name}.{callback.data}")
+    audio_path = OUTPUT_DIR / f"{file_name}.{callback.data}"
+    audio_file = FSInputFile(audio_path)
 
     await callback.answer()
-    await callback.message.answer_document(document=audio_path, caption="Сделано с душой)")
+    await callback.message.answer_document(document=audio_file, caption="Сделано с душой)")
 
     # Чистим аудио файл
-    if os.path.exists(f"temp_videos/{file_name}.{callback.data}"):
-        os.remove(f"temp_videos/{file_name}.{callback.data}")
+    if audio_path.exists():
+        audio_path.unlink()
