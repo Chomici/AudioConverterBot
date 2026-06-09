@@ -2,6 +2,7 @@ import asyncio
 
 from aiogram import F
 from aiogram import types, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
@@ -90,17 +91,36 @@ async def upload_video(callback: types.CallbackQuery, state: FSMContext):
                        StateFilter(URLDownloadState.waiting_audio_format))
 async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
     url = await state.get_value('url')
-
-    video = YoutubeConverter(url=url)
-    file_name = video.get_video_title()
-    video.download_with_quality(filename=f"{file_name}.{callback.data}", quality="audio_only")
-
-    audio_path = OUTPUT_DIR / f"{file_name}.{callback.data}"
-    audio_file = FSInputFile(audio_path)
+    audio_path = None  # Для доступа в блоке finally
 
     await callback.answer()
-    await callback.message.answer_document(document=audio_file, caption="Сделано с душой)")
+    status_msg = await callback.message.answer("Скачиваю аудио, подождите...")
 
-    # Чистим аудио файл
-    if audio_path.exists():
-        audio_path.unlink()
+    try:
+        video = YoutubeConverter(url=url)
+        file_name = await asyncio.to_thread(video.get_video_title)
+        await asyncio.to_thread(video.download_with_quality,
+                                filename=f"{file_name}.{callback.data}",
+                                quality="audio_only",
+                                audio_quality="medium")
+
+        audio_path = OUTPUT_DIR / f"{file_name}.{callback.data}"
+        audio_file = FSInputFile(audio_path)
+
+        await callback.message.answer_document(document=audio_file, caption="Сделано с душой)")
+
+    except Exception as ex:
+        await callback.message.answer("Неизвестная ошибка во время загрузки видео")
+        print(f"Сбой в url_download.py (upload_audio): {ex}")
+
+    finally:
+        # Удаляем статусное сообщение
+        try:
+            await status_msg.delete()
+        except TelegramBadRequest:
+            pass  # Если сообщение уже удалено
+
+        if audio_path and audio_path.exists():
+            audio_path.unlink()
+
+        await state.clear()
