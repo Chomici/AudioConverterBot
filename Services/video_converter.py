@@ -85,12 +85,11 @@ class VideoConverter:
 
                 return str(output_path)
             else:
-                # TODO : добавить связь с ботом о ошибке формата
-                pass
+                raise ValueError(f"Неподдерживаемый тип данных: {target_format}")
         except Exception as ex:
             # Если словили ошибку, то закроем здесь, если в блоке try не смогли
             self.close()
-            print(ex)
+            raise ex
 
     def close(self):
         """
