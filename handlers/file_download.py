@@ -81,12 +81,10 @@ async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext
 @router.callback_query(F.data.in_(list(POSSIBLE_AUDIO_CODECS.keys())),
                        StateFilter(FileDownloadState.waiting_file_format))
 async def return_audio(callback: types.CallbackQuery, state: FSMContext):
-    # Пока что отправляем тот же видос
     file_name = await state.get_value("full_name")
 
     # Получаем имя без расширения
     base_name = pathlib.Path(file_name).stem
-
     audio_path = OUTPUT_DIR / f"{base_name}.{callback.data}"
 
     # Нужно будет вынести код в async
