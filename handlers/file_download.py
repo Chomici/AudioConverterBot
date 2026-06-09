@@ -92,11 +92,11 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
     status_msg = await callback.message.answer("Извлекаю аудиодорожку, подождите...")
 
     try:
-        video = await asyncio.to_thread(VideoConverter, filename=file_name)
-        await asyncio.to_thread(video.converter_file,
+        # Чтобы не выносить в несколько потоков, выполняем в отдельной функции
+        await asyncio.to_thread(convert_video,
+                                filename=file_name,
                                 new_filename=base_name,
-                                target_format=callback.data
-                                )
+                                target_format=callback.data)
 
         audio_file = FSInputFile(audio_path)
         await status_msg.delete()
@@ -118,3 +118,9 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
             audio_path.unlink()
 
         await state.clear()
+
+
+def convert_video(filename, new_filename, target_format):
+    video = VideoConverter(filename=filename)
+    video.converter_file(new_filename=new_filename,
+                         target_format=target_format)

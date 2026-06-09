@@ -64,11 +64,12 @@ async def upload_video(callback: types.CallbackQuery, state: FSMContext):
     status_msg = await callback.message.answer("Скачиваю видео, подождите...")
 
     try:
-        video = await asyncio.to_thread(YoutubeConverter, url=url)
-        file_name = await asyncio.to_thread(video.get_video_title)
-        video_path = OUTPUT_DIR / f"{file_name}.{callback.data}"
+        # Чтобы не выносить в несколько потоков, выполняем в отдельной функции
+        file_name = await asyncio.to_thread(download_video,
+                                            url=url,
+                                            target_format=callback.data)
 
-        await asyncio.to_thread(video.download_file, filename=f"{file_name}.{callback.data}")
+        video_path = OUTPUT_DIR / f"{file_name}.{callback.data}"
         video_file = FSInputFile(video_path)
 
         await callback.message.answer_document(document=video_file, caption="Сделано с душой)")
@@ -87,6 +88,13 @@ async def upload_video(callback: types.CallbackQuery, state: FSMContext):
         await state.clear()
 
 
+def download_video(url, target_format):
+    video = YoutubeConverter(url=url)
+    file_name = video.get_video_title()
+    video.download_file(filename=f"{file_name}.{target_format}")
+    return file_name
+
+
 @router.callback_query(F.data.in_(list(POSSIBLE_AUDIO_CODECS.keys())),
                        StateFilter(URLDownloadState.waiting_audio_format))
 async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
@@ -97,12 +105,9 @@ async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
     status_msg = await callback.message.answer("Скачиваю аудио, подождите...")
 
     try:
-        video = YoutubeConverter(url=url)
-        file_name = await asyncio.to_thread(video.get_video_title)
-        await asyncio.to_thread(video.download_with_quality,
-                                filename=f"{file_name}.{callback.data}",
-                                quality="audio_only",
-                                audio_quality="medium")
+        file_name = await asyncio.to_thread(download_audio,
+                                            url=url,
+                                            target_format=callback.data)
 
         audio_path = OUTPUT_DIR / f"{file_name}.{callback.data}"
         audio_file = FSInputFile(audio_path)
@@ -124,3 +129,12 @@ async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
             audio_path.unlink()
 
         await state.clear()
+
+
+def download_audio(url, target_format):
+    video = YoutubeConverter(url=url)
+    file_name = video.get_video_title()
+    video.download_with_quality(filename=f"{file_name}.{target_format}",
+                                quality="audio_only",
+                                audio_quality="medium")
+    return file_name
