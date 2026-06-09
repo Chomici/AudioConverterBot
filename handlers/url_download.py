@@ -1,3 +1,5 @@
+import asyncio
+
 from aiogram import F
 from aiogram import types, Router
 from aiogram.filters import StateFilter
@@ -55,22 +57,33 @@ async def handle_invalid_url(message: types.Message):
 @router.callback_query(F.data.in_(POSSIBLE_VIDEO_FORMATS), StateFilter(URLDownloadState.waiting_video_format))
 async def upload_video(callback: types.CallbackQuery, state: FSMContext):
     url = await state.get_value('url')
-
-    video = YoutubeConverter(url=url)
-    file_name = video.get_video_title()
-    video.download_file(filename=f"{file_name}.{callback.data}")
-
-    video_path = OUTPUT_DIR / f"{file_name}.{callback.data}"
-    video_file = FSInputFile(video_path)
+    video_path = None  # Для доступа в блоке finally
 
     await callback.answer()
-    await callback.message.answer_document(document=video_file, caption="Сделано с душой)")
+    status_msg = await callback.message.answer("Скачиваю видео, подождите...")
 
-    # Чистим видео файл
-    if video_path.exists():
-        video_path.unlink()
+    try:
+        video = await asyncio.to_thread(YoutubeConverter, url=url)
+        file_name = await asyncio.to_thread(video.get_video_title)
+        video_path = OUTPUT_DIR / f"{file_name}.{callback.data}"
 
-    await state.clear()
+        await asyncio.to_thread(video.download_file, filename=f"{file_name}.{callback.data}")
+        video_file = FSInputFile(video_path)
+
+        await callback.message.answer_document(document=video_file, caption="Сделано с душой)")
+        await status_msg.delete()
+
+    # Ошибки загрузки через поток или непредвиденные ошибки
+    except Exception as ex:
+        await status_msg.delete()
+        await callback.message.answer("Неизвестная ошибка во время загрузки видео")
+        print(f"Сбой в url_download.py (upload_video): {ex}")
+    finally:
+        # Чистим видео файл
+        if video_path and video_path.exists():
+            video_path.unlink()
+
+        await state.clear()
 
 
 @router.callback_query(F.data.in_(list(POSSIBLE_AUDIO_CODECS.keys())),
