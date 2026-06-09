@@ -52,11 +52,23 @@ class VideoConverter:
         # Конвертация в аудио формат
         try:
             # Проверяем на допустимость формата
-            if target_format in list(POSSIBLE_AUDIO_CODECS.keys()):
+            if target_format in POSSIBLE_AUDIO_CODECS:
                 output_path = OUTPUT_DIR / f"{new_filename}.{target_format}"
+                codec_settings = POSSIBLE_AUDIO_CODECS[target_format]
 
-                # Возвращаем измененный файл аудио формата
-                self.input_video_file.audio.write_audiofile(str(output_path))
+                # Аргументы для кодировки файла
+                write_args = {
+                    "filename": str(output_path),
+                    "codec": codec_settings["codec"],
+                    "logger": None
+                }
+
+                # Если для формата нужен битрейт (для wav/flac он не нужен)
+                if codec_settings.get("bitrate"):
+                    write_args["bitrate"] = codec_settings["bitrate"]
+
+                # Создаем измененный файл аудио формата
+                self.input_video_file.audio.write_audiofile(**write_args)
 
                 # Файл нужно закрыть для правильной очистки временного видео
                 self.close()
