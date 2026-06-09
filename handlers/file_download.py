@@ -13,7 +13,7 @@ from keyboards.menu import get_back_keyboard, get_file_choice_keyboard
 from states.file_download import FileDownloadState
 
 from Services.config import POSSIBLE_AUDIO_CODECS, OUTPUT_DIR
-from Services.video_converter import VideoConverter
+from Services.utils import convert_video
 
 router = Router()
 
@@ -118,9 +118,3 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
             audio_path.unlink()
 
         await state.clear()
-
-
-def convert_video(filename, new_filename, target_format):
-    video = VideoConverter(filename=filename)
-    video.converter_file(new_filename=new_filename,
-                         target_format=target_format)
