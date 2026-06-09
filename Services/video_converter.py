@@ -20,6 +20,8 @@ class VideoConverter:
             # Формат файла, полученный из регулярного выражения без точки
             self.file_format = regex_file_format.group(0)[1:]
 
+        filename = sanitize_filename(filename)
+
         # Убираем выход из папки, ибо запуск бота из main.py,
         # который на уровне с temp_videos
         file_path = Path(OUTPUT_DIR / filename)
@@ -44,6 +46,9 @@ class VideoConverter:
         # Проверяем было ли передано имя в метод, если нет, то берем изначальное имя
         if not new_filename:
             new_filename = self.filename
+        else:
+            new_filename = sanitize_filename(new_filename)
+
 
         # Проверяем на наличие аудиодорожки у видео файла
         if self.input_video_file.audio is None:

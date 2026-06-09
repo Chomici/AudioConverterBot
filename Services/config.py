@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 # Так как бот запускается из main.py, выход из папки Services не нужен
@@ -18,3 +19,11 @@ POSSIBLE_VIDEO_FORMATS = [  # Взято из use-case
     "mkv",
     "webm"
 ]
+
+
+def sanitize_filename(filename: str, replacement: str = "") -> str:
+    """
+    Очищает строку от символов, запрещенных в именах файлов.
+    """
+    bad_chars = r'[\\/*?:"<>|]'
+    return re.sub(bad_chars, replacement, filename).strip()

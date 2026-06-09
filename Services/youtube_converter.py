@@ -21,7 +21,7 @@ class YoutubeConverter:
         """
         Возвращает название Youtube видео
         """
-        return self.youtube_object.title
+        return sanitize_filename(self.youtube_object.title)
 
     def get_video_author(self) -> str:
         """
