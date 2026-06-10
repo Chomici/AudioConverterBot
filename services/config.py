@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-# Так как бот запускается из main.py, выход из папки Services не нужен
+# Так как бот запускается из main.py, выход из папки services не нужен
 OUTPUT_DIR = Path("temp_videos")
 
 # Для корректной конвертации по ссылке через YoutubeConverter

@@ -1,6 +1,6 @@
 from pytubefix import YouTube
 from urllib.parse import urlparse
-from Services.config import *
+from services.config import *
 
 from moviepy import AudioFileClip
 

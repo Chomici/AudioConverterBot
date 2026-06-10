@@ -1,5 +1,5 @@
-from Services.youtube_converter import YoutubeConverter
-from Services.video_converter import VideoConverter
+from services.youtube_converter import YoutubeConverter
+from services.video_converter import VideoConverter
 
 
 def download_video(url: str, target_format: str) -> str:

@@ -10,8 +10,8 @@ from keyboards.menu import get_back_keyboard, get_url_choice_keyboard
 from keyboards.menu import get_audio_format_keyboard, get_video_format_keyboard
 from states.url_download import URLDownloadState
 
-from Services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS, OUTPUT_DIR
-from Services.utils import download_video, download_audio
+from services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS, OUTPUT_DIR
+from services.utils import download_video, download_audio
 
 router = Router()
 

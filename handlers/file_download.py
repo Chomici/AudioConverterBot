@@ -12,8 +12,8 @@ from keyboards.menu import get_audio_format_keyboard
 from keyboards.menu import get_back_keyboard, get_file_choice_keyboard
 from states.file_download import FileDownloadState
 
-from Services.config import POSSIBLE_AUDIO_CODECS, OUTPUT_DIR
-from Services.utils import convert_video
+from services.config import POSSIBLE_AUDIO_CODECS, OUTPUT_DIR
+from services.utils import convert_video
 
 router = Router()
 

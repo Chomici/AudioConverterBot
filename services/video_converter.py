@@ -1,7 +1,7 @@
 import pathlib
 from re import search  # для обрезки расширения файла
 from moviepy import VideoFileClip
-from Services.config import *
+from services.config import *
 
 
 class VideoConverter:

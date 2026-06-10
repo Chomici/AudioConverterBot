@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from Services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS
+from services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS
 
 
 def get_menu_keyboard() -> InlineKeyboardMarkup:
