@@ -83,15 +83,19 @@ async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext
                        StateFilter(FileDownloadState.waiting_file_format))
 async def return_audio(callback: types.CallbackQuery, state: FSMContext):
     file_name = await state.get_value("full_name")
-
-    # Получаем имя без расширения
-    base_name = pathlib.Path(file_name).stem
-    audio_path = OUTPUT_DIR / f"{base_name}.{callback.data}"
+    audio_path = None
 
     await callback.answer()
     status_msg = await callback.message.answer("Извлекаю аудиодорожку, подождите...")
 
     try:
+        if not file_name:
+            raise ValueError("Файл не найден")
+
+        # Получаем имя без расширения
+        base_name = pathlib.Path(file_name).stem
+        audio_path = OUTPUT_DIR / f"{base_name}.{callback.data}"
+
         # Чтобы не выносить в несколько потоков, выполняем в отдельной функции
         await asyncio.to_thread(convert_video,
                                 filename=file_name,
@@ -99,22 +103,25 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
                                 target_format=callback.data)
 
         audio_file = FSInputFile(audio_path)
-        await status_msg.delete()
         await callback.message.answer_document(document=audio_file, caption="Сделано с душой)")
 
     # Ошибки, возможные при конвертации в VideoConverter
     except ValueError as value_ex:
-        await status_msg.delete()
         await callback.message.answer(f"Ошибка обработки: {value_ex}")
     # Непредвиденные ошибки
     except Exception as ex:
-        await status_msg.delete()
         await callback.message.answer(f"Неизвестная ошибка во время конвертации. Возможно, файл поврежден")
         print(f"Сбой в file_download.py (return_audio): {ex}")
 
     finally:
+        # Удаляем статусное сообщение
+        try:
+            await status_msg.delete()
+        except Exception:
+            pass  # Если сообщение уже удалено
+
         # Чистим аудио файл
-        if audio_path.exists():
+        if audio_path and audio_path.exists():
             audio_path.unlink()
 
         await state.clear()

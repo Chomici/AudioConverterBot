@@ -2,7 +2,6 @@ import asyncio
 
 from aiogram import F
 from aiogram import types, Router
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
@@ -73,14 +72,19 @@ async def upload_video(callback: types.CallbackQuery, state: FSMContext):
         video_file = FSInputFile(video_path)
 
         await callback.message.answer_document(document=video_file, caption="Сделано с душой)")
-        await status_msg.delete()
 
     # Ошибки загрузки через поток или непредвиденные ошибки
     except Exception as ex:
-        await status_msg.delete()
         await callback.message.answer("Неизвестная ошибка во время загрузки видео")
         print(f"Сбой в url_download.py (upload_video): {ex}")
+
     finally:
+        # Удаляем статусное сообщение
+        try:
+            await status_msg.delete()
+        except Exception:
+            pass  # Если сообщение уже удалено
+
         # Чистим видео файл
         if video_path and video_path.exists():
             video_path.unlink()
@@ -115,7 +119,7 @@ async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
         # Удаляем статусное сообщение
         try:
             await status_msg.delete()
-        except TelegramBadRequest:
+        except Exception:
             pass  # Если сообщение уже удалено
 
         if audio_path and audio_path.exists():
