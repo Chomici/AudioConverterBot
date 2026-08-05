@@ -11,7 +11,9 @@ router = Router()
 
 _INFO_MESSAGES = {
     "about_authors": "Авторы",
-    "help": "Справка"
+
+    "help": '''Вы можете отправить как свое видео, так и ссылку на видео в Youtube (из Youtube можно получить как аудио, так и видео).
+\nПоддерживаемые форматы:\n - Аудио - mp3, ogg, flac, wav;\n - Видео - mp4, avi, mov, mkv, webm'''
 }
 
 
