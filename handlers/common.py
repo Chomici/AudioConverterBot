@@ -18,12 +18,6 @@ _INFO_MESSAGES = {
 async def cmd_start(message: types.Message):
     await message.answer("Добро пожаловать в наш конвертер!\nЗдесь вы можете получить аудио из вашего видео.")
 
-
-@router.message()
-async def echo(message: types.Message):
-    await message.answer(f"Вы написали: {message.text}")
-
-
 @router.callback_query(F.data.in_(_INFO_MESSAGES))
 async def handle_info_buttons(callback: types.CallbackQuery):
     # Без всплывающего уведомления + убирает анимацию загрузки на кнопке

@@ -78,7 +78,7 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
     # Непредвиденные ошибки
     except Exception as ex:
         await callback.message.answer(f"Неизвестная ошибка во время конвертации. Возможно, файл поврежден")
-        print(f"Сбой в common.py (return_audio): {ex}")
+        print(f"Сбой в file_download.py (return_audio): {ex}")
 
     finally:
         # Удаляем статусное сообщение

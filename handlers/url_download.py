@@ -6,9 +6,8 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 
-from keyboards.menu import get_back_keyboard, get_url_choice_keyboard
-from keyboards.menu import get_audio_format_keyboard, get_video_format_keyboard
-from states.url_download import URLDownloadState
+from keyboards.menu import get_url_choice_keyboard, get_audio_format_keyboard, get_video_format_keyboard
+from states.media import MediaState
 
 from services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS, OUTPUT_DIR
 from services.utils import download_video, download_audio
@@ -16,45 +15,30 @@ from services.utils import download_video, download_audio
 router = Router()
 
 
-@router.callback_query(F.data.in_(["url_get_video", "url_get_audio"]))
-async def show_paste_url_prompt(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(URLDownloadState.waiting_url)
-    # Берем состояние сразу, ибо ссылку в обоих случаях принимаем
-    await state.update_data(type=callback.data)
-
-    await callback.answer()
-    await callback.message.edit_text("Вставьте ссылку на ваше видео (Youtube):",
-                                     reply_markup=get_back_keyboard())
-
-
-@router.callback_query(F.data == "back", StateFilter(URLDownloadState.waiting_url))
-async def back_to_choice(callback: types.CallbackQuery, state: FSMContext):
-    await state.clear()
-    await callback.answer()
-    await callback.message.edit_text("Выберите действие:", reply_markup=get_url_choice_keyboard())
-
-
-@router.message(F.text.contains("youtube.com") | F.text.contains("youtu.be"), StateFilter(URLDownloadState.waiting_url))
+@router.message(F.text.contains("youtube.com") | F.text.contains("youtu.be"))
 async def handle_paste_url(message: types.Message, state: FSMContext):
     url = message.text
     await state.update_data(url=url)
 
-    action_type = await state.get_value("type")
-
-    if action_type == "url_get_video":
-        await state.set_state(URLDownloadState.waiting_video_format)
-        await message.answer("Выберите формат видео:", reply_markup=get_video_format_keyboard())
-    elif action_type == "url_get_audio":
-        await state.set_state(URLDownloadState.waiting_audio_format)
-        await message.answer("Выберите формат аудиофайла:", reply_markup=get_audio_format_keyboard())
+    await state.set_state(MediaState.waiting_url_type)
+    await message.answer("Выберите тип файла:", reply_markup=get_url_choice_keyboard())
 
 
-@router.message(StateFilter(URLDownloadState.waiting_url))
-async def handle_invalid_url(message: types.Message):
-    await message.answer("Неверная ссылка, повторите ещё раз.")
+@router.callback_query(F.data == "url_get_audio", StateFilter(MediaState.waiting_url_type))
+async def url_get_audio(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await state.set_state(MediaState.waiting_url_format)
+    await callback.message.answer("Выберите формат аудиофайла:", reply_markup=get_audio_format_keyboard())
 
 
-@router.callback_query(F.data.in_(POSSIBLE_VIDEO_FORMATS), StateFilter(URLDownloadState.waiting_video_format))
+@router.callback_query(F.data == "url_get_video", StateFilter(MediaState.waiting_url_type))
+async def url_get_video(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await state.set_state(MediaState.waiting_url_format)
+    await callback.message.answer("Выберите формат видеофайла:", reply_markup=get_video_format_keyboard())
+
+
+@router.callback_query(F.data.in_(POSSIBLE_VIDEO_FORMATS), StateFilter(MediaState.waiting_url_format))
 async def upload_video(callback: types.CallbackQuery, state: FSMContext):
     url = await state.get_value('url')
     video_path = None  # Для доступа в блоке finally
@@ -92,8 +76,7 @@ async def upload_video(callback: types.CallbackQuery, state: FSMContext):
         await state.clear()
 
 
-@router.callback_query(F.data.in_(list(POSSIBLE_AUDIO_CODECS.keys())),
-                       StateFilter(URLDownloadState.waiting_audio_format))
+@router.callback_query(F.data.in_(list(POSSIBLE_AUDIO_CODECS.keys())), StateFilter(MediaState.waiting_url_format))
 async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
     url = await state.get_value('url')
     audio_path = None  # Для доступа в блоке finally
