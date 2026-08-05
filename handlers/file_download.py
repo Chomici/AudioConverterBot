@@ -4,54 +4,21 @@ import uuid
 
 from aiogram import F
 from aiogram import types, Bot, Router
-from aiogram.filters import Command, StateFilter
+from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 
 from keyboards.menu import get_audio_format_keyboard
-from keyboards.menu import get_back_keyboard, get_file_choice_keyboard
-from states.file_download import FileDownloadState
 
 from services.config import POSSIBLE_AUDIO_CODECS, OUTPUT_DIR
 from services.utils import convert_video
+from states.media import MediaState
 
 router = Router()
 
 
-# Принимаем файл либо по команде(/uploadfile), либо после нажатия кнопки ("Получить аудио")
-async def show_upload_file_prompt(event: types.Message | types.CallbackQuery, state: FSMContext):
-    await state.set_state(FileDownloadState.waiting_file)
-
-    # Из-за разных способов ответа Message и CallbackQuery проверяем тип события
-    if isinstance(event, types.Message):
-        await event.answer("Отправьте видео файл одного из поддерживаемых параметров:",
-                           reply_markup=get_back_keyboard())
-    else:
-        await event.message.edit_text("Отправьте видео файл одного из поддерживаемых параметров:",
-                                      reply_markup=get_back_keyboard())
-
-
-@router.message(Command("uploadfile"))
-async def cmd_upload_file(message: types.Message, state: FSMContext):
-    await show_upload_file_prompt(message, state)
-
-
-@router.callback_query(F.data == "file_get_audio")
-async def handle_file_get_audio(callback: types.CallbackQuery, state: FSMContext):
-    await show_upload_file_prompt(callback, state)
-
-
-# Фильтры в декораторе через запятую это условие AND
-@router.callback_query(F.data == "back", StateFilter(FileDownloadState.waiting_file))
-async def back_to_choice(callback: types.CallbackQuery, state: FSMContext):
-    await state.clear()
-    await callback.answer()
-    await callback.message.edit_text("Выберите действие:", reply_markup=get_file_choice_keyboard())
-
-
-# StateFilter гарантирует, что обработчик сработает только в нужном состоянии FSM.
 # Могут прислать либо несжатый(document), либо сжатый(video) файл
-@router.message(F.document | F.video, StateFilter(FileDownloadState.waiting_file))
+@router.message(F.document | F.video)
 async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext):
     # bot и state автоматически достаются aiogram из контекста
     file = message.document or message.video
@@ -73,14 +40,14 @@ async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext
 
     # Сохраняем имя файла для класса VideoConverter
     await state.update_data(full_name=file_name)
-    await state.set_state(FileDownloadState.waiting_file_format)
+    await state.set_state(MediaState.waiting_file_format)
 
     await message.answer("Готово! Выберите формат аудиофайла: ",
                          reply_markup=get_audio_format_keyboard())
 
 
 @router.callback_query(F.data.in_(list(POSSIBLE_AUDIO_CODECS.keys())),
-                       StateFilter(FileDownloadState.waiting_file_format))
+                       StateFilter(MediaState.waiting_file_format))
 async def return_audio(callback: types.CallbackQuery, state: FSMContext):
     file_name = await state.get_value("full_name")
     audio_path = None
@@ -111,7 +78,7 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
     # Непредвиденные ошибки
     except Exception as ex:
         await callback.message.answer(f"Неизвестная ошибка во время конвертации. Возможно, файл поврежден")
-        print(f"Сбой в file_download.py (return_audio): {ex}")
+        print(f"Сбой в common.py (return_audio): {ex}")
 
     finally:
         # Удаляем статусное сообщение
@@ -125,3 +92,4 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
             audio_path.unlink()
 
         await state.clear()
+
