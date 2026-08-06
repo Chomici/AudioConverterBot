@@ -1,39 +1,41 @@
-from aiogram.types import InlineKeyboardMarkup
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import ReplyKeyboardMarkup
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 from services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS
 
 
-def get_url_choice_keyboard() -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    builder.button(text="Получить видео", callback_data="url_get_video")
-    builder.button(text="Получить аудио", callback_data="url_get_audio")
-    builder.button(text="Назад", callback_data="back")
+def get_url_choice_keyboard() -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
+    builder.button(text="Получить видео")
+    builder.button(text="Получить аудио")
+    builder.button(text="Отмена")
 
     builder.adjust(2, 1)
 
-    return builder.as_markup()
+    return builder.as_markup(resize_keyboard=True)
 
 
-def get_audio_format_keyboard() -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
+def get_audio_format_keyboard() -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
 
     # Если будут новые форматы для удобства добавления новых
     for audio_type in list(POSSIBLE_AUDIO_CODECS.keys()):
-        builder.button(text=audio_type.upper(), callback_data=audio_type.lower())
+        builder.button(text=audio_type.upper())
+    builder.button(text="Отмена")
 
     # Автоматически ставит максимум 2 кнопки в ряд
     builder.adjust(2)
 
-    return builder.as_markup()
+    return builder.as_markup(resize_keyboard=True)
 
 
-def get_video_format_keyboard() -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
+def get_video_format_keyboard() -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
 
     for video_type in POSSIBLE_VIDEO_FORMATS:
-        builder.button(text=video_type.upper(), callback_data=video_type.lower())
+        builder.button(text=video_type.upper())
+    builder.button(text="Отмена")
 
     builder.adjust(2)
 
-    return builder.as_markup()
+    return builder.as_markup(resize_keyboard=True)

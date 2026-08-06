@@ -24,42 +24,40 @@ async def handle_paste_url(message: types.Message, state: FSMContext):
     await message.answer("Выберите тип файла:", reply_markup=get_url_choice_keyboard())
 
 
-@router.callback_query(F.data == "url_get_audio", StateFilter(MediaState.waiting_url_type))
-async def url_get_audio(callback: types.CallbackQuery, state: FSMContext):
-    await callback.answer()
+@router.message(F.text == "Получить аудио", StateFilter(MediaState.waiting_url_type))
+async def url_get_audio(message: types.Message, state: FSMContext):
     await state.set_state(MediaState.waiting_url_format)
-    await callback.message.answer("Выберите формат аудиофайла:", reply_markup=get_audio_format_keyboard())
+    await message.answer("Выберите формат аудиофайла:", reply_markup=get_audio_format_keyboard())
 
 
-@router.callback_query(F.data == "url_get_video", StateFilter(MediaState.waiting_url_type))
-async def url_get_video(callback: types.CallbackQuery, state: FSMContext):
-    await callback.answer()
+@router.message(F.text == "Получить видео", StateFilter(MediaState.waiting_url_type))
+async def url_get_video(message: types.Message, state: FSMContext):
     await state.set_state(MediaState.waiting_url_format)
-    await callback.message.answer("Выберите формат видеофайла:", reply_markup=get_video_format_keyboard())
+    await message.answer("Выберите формат видеофайла:", reply_markup=get_video_format_keyboard())
 
 
-@router.callback_query(F.data.in_(POSSIBLE_VIDEO_FORMATS), StateFilter(MediaState.waiting_url_format))
-async def upload_video(callback: types.CallbackQuery, state: FSMContext):
+@router.message(F.text.lower().in_(POSSIBLE_VIDEO_FORMATS), StateFilter(MediaState.waiting_url_format))
+async def upload_video(message: types.Message, state: FSMContext):
     url = await state.get_value('url')
+    target_format = message.text.lower()
     video_path = None  # Для доступа в блоке finally
 
-    await callback.answer()
-    status_msg = await callback.message.answer("Скачиваю видео, подождите...")
+    status_msg = await message.answer("Скачиваю видео, подождите...")
 
     try:
         # Чтобы не выносить в несколько потоков, выполняем в отдельной функции
         file_name = await asyncio.to_thread(download_video,
                                             url=url,
-                                            target_format=callback.data)
+                                            target_format=target_format)
 
-        video_path = OUTPUT_DIR / f"{file_name}.{callback.data}"
+        video_path = OUTPUT_DIR / f"{file_name}.{target_format}"
         video_file = FSInputFile(video_path)
 
-        await callback.message.answer_document(document=video_file, caption="Сделано с душой)")
+        await message.answer_document(document=video_file, caption="Сделано с душой)")
 
     # Ошибки загрузки через поток или непредвиденные ошибки
     except Exception as ex:
-        await callback.message.answer("Неизвестная ошибка во время загрузки видео")
+        await message.answer("Неизвестная ошибка во время загрузки видео")
         print(f"Сбой в url_download.py (upload_video): {ex}")
 
     finally:
@@ -76,26 +74,26 @@ async def upload_video(callback: types.CallbackQuery, state: FSMContext):
         await state.clear()
 
 
-@router.callback_query(F.data.in_(list(POSSIBLE_AUDIO_CODECS.keys())), StateFilter(MediaState.waiting_url_format))
-async def upload_audio(callback: types.CallbackQuery, state: FSMContext):
+@router.message(F.text.lower().in_(list(POSSIBLE_AUDIO_CODECS.keys())), StateFilter(MediaState.waiting_url_format))
+async def upload_audio(message: types.Message, state: FSMContext):
     url = await state.get_value('url')
+    target_format = message.text.lower()
     audio_path = None  # Для доступа в блоке finally
 
-    await callback.answer()
-    status_msg = await callback.message.answer("Скачиваю аудио, подождите...")
+    status_msg = await message.answer("Скачиваю аудио, подождите...")
 
     try:
         file_name = await asyncio.to_thread(download_audio,
                                             url=url,
-                                            target_format=callback.data)
+                                            target_format=target_format)
 
-        audio_path = OUTPUT_DIR / f"{file_name}.{callback.data}"
+        audio_path = OUTPUT_DIR / f"{file_name}.{target_format}"
         audio_file = FSInputFile(audio_path)
 
-        await callback.message.answer_document(document=audio_file, caption="Сделано с душой)")
+        await message.answer_document(document=audio_file, caption="Сделано с душой)")
 
     except Exception as ex:
-        await callback.message.answer("Неизвестная ошибка во время загрузки видео")
+        await message.answer("Неизвестная ошибка во время загрузки видео")
         print(f"Сбой в url_download.py (upload_audio): {ex}")
 
     finally:

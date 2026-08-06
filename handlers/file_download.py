@@ -1,6 +1,7 @@
 import asyncio
 import pathlib
 import uuid
+from email import message
 
 from aiogram import F
 from aiogram import types, Bot, Router
@@ -46,14 +47,14 @@ async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext
                          reply_markup=get_audio_format_keyboard())
 
 
-@router.callback_query(F.data.in_(list(POSSIBLE_AUDIO_CODECS.keys())),
-                       StateFilter(MediaState.waiting_file_format))
-async def return_audio(callback: types.CallbackQuery, state: FSMContext):
+@router.message(F.text.lower().in_(list(POSSIBLE_AUDIO_CODECS.keys())),
+                 StateFilter(MediaState.waiting_file_format))
+async def return_audio(message: types.Message, state: FSMContext):
     file_name = await state.get_value("full_name")
+    target_format = message.text.lower()
     audio_path = None
 
-    await callback.answer()
-    status_msg = await callback.message.answer("Извлекаю аудиодорожку, подождите...")
+    status_msg = await message.answer("Извлекаю аудиодорожку, подождите...")
 
     try:
         if not file_name:
@@ -61,23 +62,23 @@ async def return_audio(callback: types.CallbackQuery, state: FSMContext):
 
         # Получаем имя без расширения
         base_name = pathlib.Path(file_name).stem
-        audio_path = OUTPUT_DIR / f"{base_name}.{callback.data}"
+        audio_path = OUTPUT_DIR / f"{base_name}.{target_format}"
 
         # Чтобы не выносить в несколько потоков, выполняем в отдельной функции
         await asyncio.to_thread(convert_video,
                                 filename=file_name,
                                 new_filename=base_name,
-                                target_format=callback.data)
+                                target_format=target_format)
 
         audio_file = FSInputFile(audio_path)
-        await callback.message.answer_document(document=audio_file, caption="Сделано с душой)")
+        await message.answer_document(document=audio_file, caption="Сделано с душой)")
 
     # Ошибки, возможные при конвертации в VideoConverter
     except ValueError as value_ex:
-        await callback.message.answer(f"Ошибка обработки: {value_ex}")
+        await message.answer(f"Ошибка обработки: {value_ex}")
     # Непредвиденные ошибки
     except Exception as ex:
-        await callback.message.answer(f"Неизвестная ошибка во время конвертации. Возможно, файл поврежден")
+        await message.answer("Неизвестная ошибка во время конвертации. Возможно, файл поврежден")
         print(f"Сбой в file_download.py (return_audio): {ex}")
 
     finally:
