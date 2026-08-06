@@ -18,12 +18,6 @@ _INFO_MESSAGES = {
 async def cmd_start(message: types.Message):
     await message.answer("Добро пожаловать в наш конвертер!\nЗдесь вы можете получить аудио из вашего видео.")
 
-@router.callback_query(F.data.in_(_INFO_MESSAGES))
-async def handle_info_buttons(callback: types.CallbackQuery):
-    # Без всплывающего уведомления + убирает анимацию загрузки на кнопке
-    await callback.answer()
-    # edit_text редактирует существующее сообщение вместо отправки нового
-    await callback.message.edit_text(f"{_INFO_MESSAGES.get(callback.data, 'Нет информации')}")
 
 @router.callback_query()
 async def handle_unknown_callback(callback: types.CallbackQuery):
