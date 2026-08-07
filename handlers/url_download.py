@@ -117,3 +117,12 @@ async def upload_audio(message: types.Message, state: FSMContext):
 @router.message(StateFilter(MediaState.waiting_url_type, MediaState.waiting_url_format))
 async def invalid_url_input(message: types.Message):
     await message.answer("Пожалуйста, воспользуйтесь кнопками ниже.")
+
+
+# Срабатывает в свободном состоянии для любого текста, который не youtube-ссылка
+@router.message(F.text, StateFilter(None))
+async def unknown_text(message: types.Message):
+    await message.answer(
+        "Не похоже на ссылку YouTube.\n"
+        "Пришлите ссылку на видео или видеофайл. Нажмите «Справка», чтобы увидеть поддерживаемые форматы."
+    )
