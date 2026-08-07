@@ -1,7 +1,6 @@
 import asyncio
 import pathlib
 import uuid
-from email import message
 
 from aiogram import F
 from aiogram import types, Bot, Router
@@ -9,7 +8,7 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 
-from keyboards.menu import get_audio_format_keyboard
+from keyboards.menu import get_audio_format_keyboard, get_idle_keyboard
 
 from services.config import POSSIBLE_AUDIO_CODECS, OUTPUT_DIR
 from services.utils import convert_video
@@ -21,6 +20,8 @@ router = Router()
 # Могут прислать либо несжатый(document), либо сжатый(video) файл
 @router.message(F.document | F.video)
 async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext):
+    await state.clear()
+
     # bot и state автоматически достаются aiogram из контекста
     file = message.document or message.video
 
@@ -71,14 +72,15 @@ async def return_audio(message: types.Message, state: FSMContext):
                                 target_format=target_format)
 
         audio_file = FSInputFile(audio_path)
-        await message.answer_document(document=audio_file, caption="Сделано с душой)")
+        await message.answer_document(document=audio_file, caption="Сделано с душой)",
+                                      reply_markup=get_idle_keyboard())
 
     # Ошибки, возможные при конвертации в VideoConverter
     except ValueError as value_ex:
-        await message.answer(f"Ошибка обработки: {value_ex}")
-    # Непредвиденные ошибки
+        await message.answer(f"Ошибка обработки: {value_ex}", reply_markup=get_idle_keyboard())
     except Exception as ex:
-        await message.answer("Неизвестная ошибка во время конвертации. Возможно, файл поврежден")
+        await message.answer("Неизвестная ошибка во время конвертации. Возможно, файл поврежден",
+                             reply_markup=get_idle_keyboard())
         print(f"Сбой в file_download.py (return_audio): {ex}")
 
     finally:
@@ -86,11 +88,10 @@ async def return_audio(message: types.Message, state: FSMContext):
         try:
             await status_msg.delete()
         except Exception:
-            pass  # Если сообщение уже удалено
+            pass
 
         # Чистим аудио файл
         if audio_path and audio_path.exists():
             audio_path.unlink()
 
         await state.clear()
-

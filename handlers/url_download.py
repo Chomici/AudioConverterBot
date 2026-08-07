@@ -6,7 +6,8 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 
-from keyboards.menu import get_url_choice_keyboard, get_audio_format_keyboard, get_video_format_keyboard
+from keyboards.menu import get_url_choice_keyboard, get_audio_format_keyboard, get_video_format_keyboard, \
+    get_idle_keyboard
 from states.media import MediaState
 
 from services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS, OUTPUT_DIR
@@ -17,6 +18,7 @@ router = Router()
 
 @router.message(F.text.contains("youtube.com") | F.text.contains("youtu.be"))
 async def handle_paste_url(message: types.Message, state: FSMContext):
+    await state.clear()
     url = message.text
     await state.update_data(url=url)
 
@@ -53,11 +55,12 @@ async def upload_video(message: types.Message, state: FSMContext):
         video_path = OUTPUT_DIR / f"{file_name}.{target_format}"
         video_file = FSInputFile(video_path)
 
-        await message.answer_document(document=video_file, caption="Сделано с душой)")
+        await message.answer_document(document=video_file, caption="Сделано с душой)",
+                                      reply_markup=get_idle_keyboard())
 
     # Ошибки загрузки через поток или непредвиденные ошибки
     except Exception as ex:
-        await message.answer("Неизвестная ошибка во время загрузки видео")
+        await message.answer("Неизвестная ошибка во время загрузки видео", reply_markup=get_idle_keyboard())
         print(f"Сбой в url_download.py (upload_video): {ex}")
 
     finally:
@@ -90,10 +93,11 @@ async def upload_audio(message: types.Message, state: FSMContext):
         audio_path = OUTPUT_DIR / f"{file_name}.{target_format}"
         audio_file = FSInputFile(audio_path)
 
-        await message.answer_document(document=audio_file, caption="Сделано с душой)")
+        await message.answer_document(document=audio_file, caption="Сделано с душой)",
+                                      reply_markup=get_idle_keyboard())
 
     except Exception as ex:
-        await message.answer("Неизвестная ошибка во время загрузки видео")
+        await message.answer("Неизвестная ошибка во время загрузки видео", reply_markup=get_idle_keyboard())
         print(f"Сбой в url_download.py (upload_audio): {ex}")
 
     finally:

@@ -3,6 +3,14 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 from services.config import POSSIBLE_VIDEO_FORMATS, POSSIBLE_AUDIO_CODECS
 
+def get_idle_keyboard() -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
+    builder.button(text="Справка")
+    builder.button(text="Об авторах")
+
+    builder.adjust(2)
+
+    return builder.as_markup(resize_keyboard=True)
 
 def get_url_choice_keyboard() -> ReplyKeyboardMarkup:
     builder = ReplyKeyboardBuilder()
