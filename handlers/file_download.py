@@ -95,3 +95,9 @@ async def return_audio(message: types.Message, state: FSMContext):
             audio_path.unlink()
 
         await state.clear()
+
+
+# Выбор формата только через кнопки, не через написанное сообщение
+@router.message(StateFilter(MediaState.waiting_file_format))
+async def invalid_file_format_input(message: types.Message):
+    await message.answer("Пожалуйста, выберите формат с помощью кнопок ниже.")

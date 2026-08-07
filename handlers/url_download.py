@@ -111,3 +111,9 @@ async def upload_audio(message: types.Message, state: FSMContext):
             audio_path.unlink()
 
         await state.clear()
+
+
+# Выбор формата только через кнопки, не через написанное сообщение
+@router.message(StateFilter(MediaState.waiting_url_type, MediaState.waiting_url_format))
+async def invalid_url_input(message: types.Message):
+    await message.answer("Пожалуйста, воспользуйтесь кнопками ниже.")
