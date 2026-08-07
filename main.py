@@ -17,9 +17,9 @@ async def main():
     dp = Dispatcher(storage=MemoryStorage())  # MemoryStorage нужен для хранения состояний
 
     # Порядок важен - он определяет приоритет обработки
+    dp.include_router(common_router)  # общие команды и "Отмена" должны перехватываться первыми
     dp.include_router(url_download_router)
     dp.include_router(file_download_router)
-    dp.include_router(common_router)  # common последним, ибо он содержит самые обобщенные обработчики
 
     os.makedirs("temp_videos", exist_ok=True)
 
