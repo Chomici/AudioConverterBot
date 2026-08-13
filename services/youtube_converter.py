@@ -86,6 +86,11 @@ class YoutubeConverter:
         if not stream:
             raise ValueError(f"Не удалось найти поток с качеством {quality}")
 
+        # Если filename не передан, формируем дефолтное имя из названия видео
+        if not filename:
+            ext = "mp3" if quality == "audio_only" else stream.subtype
+            filename = f"{self.get_video_title()}.{ext}"
+
         file_path = Path(filename)
         base_name = file_path.stem  # Имя без расширения
         target_format = file_path.suffix.lstrip('.').lower()  # Расширение без точки
@@ -103,28 +108,27 @@ class YoutubeConverter:
                 codec_settings = POSSIBLE_AUDIO_CODECS[target_format]
 
                 # AudioFileClip нужен, чтобы не терять метаданные файла
-                audio = AudioFileClip(str(temp_file_path))
+                with AudioFileClip(str(temp_file_path)) as audio:
+                    write_args = {
+                        "filename": str(OUTPUT_DIR / filename),
+                        "codec": codec_settings["codec"],
+                        "logger": None
+                    }
 
-                # Аргументы для кодировки файла
-                write_args = {
-                    "filename": str(OUTPUT_DIR / filename),
-                    "codec": codec_settings["codec"],
-                    "logger": None
-                }
+                    if codec_settings.get("bitrate"):
+                        write_args["bitrate"] = codec_settings["bitrate"]
 
-                # Если для формата нужен битрейт (для wav/flac он не нужен)
-                if codec_settings["bitrate"]:
-                    write_args["bitrate"] = codec_settings["bitrate"]
-
-                audio.write_audiofile(**write_args)
-                audio.close()
+                    audio.write_audiofile(**write_args)
             else:
                 raise ValueError(f"Неподдерживаемый формат аудио: {target_format}")
 
         # Конечная очистка временного файла
         finally:
             if temp_file_path.exists():
-                temp_file_path.unlink()
+                try:
+                    temp_file_path.unlink()
+                except OSError:
+                    pass
 
         return stream
 
