@@ -1,17 +1,19 @@
+import uuid
+
 from services.youtube_converter import YoutubeConverter
 from services.video_converter import VideoConverter
 
 
 def download_video(url: str, target_format: str) -> str:
     video = YoutubeConverter(url=url)
-    file_name = video.get_video_title()
+    file_name = f"{video.get_video_title()}_{uuid.uuid4().hex}"
     video.download_file(filename=f"{file_name}.{target_format}")
     return file_name
 
 
 def download_audio(url: str, target_format: str) -> str:
     video = YoutubeConverter(url=url)
-    file_name = video.get_video_title()
+    file_name = f"{video.get_video_title()}_{uuid.uuid4().hex}"
     video.download_with_quality(filename=f"{file_name}.{target_format}",
                                 quality="audio_only",
                                 audio_quality="medium")

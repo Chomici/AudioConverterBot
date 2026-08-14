@@ -34,8 +34,14 @@ async def handle_file_upload(message: types.Message, bot: Bot, state: FSMContext
         return
 
     await message.answer("Скачивается...")
-    # Если телеграм не дал имя файлу, генерируем
-    file_name = getattr(file, "file_name", None) or f"{uuid.uuid4()}"
+    # Генерируем имя для файла с уникальным кодом
+    original_name = getattr(file, "file_name", None)
+
+    if original_name:
+        name_path = pathlib.Path(original_name)
+        file_name = f"{name_path.stem}_{uuid.uuid4().hex}{name_path.suffix}"
+    else:
+        file_name = f"{uuid.uuid4().hex}.mp4"
 
     video_path = OUTPUT_DIR / file_name
     await bot.download(file.file_id, destination=str(video_path), timeout=300)
