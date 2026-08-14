@@ -7,7 +7,8 @@ from services.video_converter import VideoConverter
 def download_video(url: str, target_format: str) -> str:
     video = YoutubeConverter(url=url)
     file_name = f"{video.get_video_title()}_{uuid.uuid4().hex}"
-    video.download_file(filename=f"{file_name}.{target_format}")
+    video.download_with_quality(filename=f"{file_name}.{target_format}",
+                                quality="lowest")
     return file_name
 
 

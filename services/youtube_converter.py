@@ -2,7 +2,7 @@ from pytubefix import YouTube
 from urllib.parse import urlparse
 from services.config import *
 
-from moviepy import AudioFileClip
+from moviepy import AudioFileClip, VideoFileClip
 
 
 class YoutubeConverter:
@@ -19,43 +19,43 @@ class YoutubeConverter:
 
     def get_video_title(self) -> str:
         """
-        Возвращает название Youtube видео
+        Возвращает название YouTube видео
         """
         return sanitize_filename(self.youtube_object.title)
 
     def get_video_author(self) -> str:
         """
-        Возвращает никнейм автора Youtube видео
+        Возвращает никнейм автора YouTube видео
         """
         return self.youtube_object.author
 
     def get_video_description(self) -> str:
         """
-        Возвращает описание Youtube видео
+        Возвращает описание YouTube видео
         """
         return self.youtube_object.description
 
     def get_video_thumbnail_url(self) -> str:
         """
-        Возвращает ссылку на превью Youtube видео
+        Возвращает ссылку на превью YouTube видео
         """
         return self.youtube_object.thumbnail_url
 
     def get_video_captions(self):
         """
-        Возвращает словарь доступных субтитров Youtube видео
+        Возвращает словарь доступных субтитров YouTube видео
         """
         return self.youtube_object.captions
 
     def get_youtube_object(self) -> YouTube:
         """
-        Возвращает Youtube обьект
+        Возвращает YouTube обьект
         """
         return YouTube(url=self.url)
 
     def get_available_streams(self) -> dict:
         """
-        Возвращает доступные потоки для скачивания Youtube видео
+        Возвращает доступные потоки для скачивания YouTube видео
         """
         return {
             "video": list(self.youtube_object.streams.filter(only_video=True)),
@@ -119,8 +119,18 @@ class YoutubeConverter:
                         write_args["bitrate"] = codec_settings["bitrate"]
 
                     audio.write_audiofile(**write_args)
+
+
+            elif target_format in POSSIBLE_VIDEO_FORMATS:
+                with VideoFileClip(str(temp_file_path)) as video:
+                    video.write_videofile(
+                        filename=str(OUTPUT_DIR / filename),
+                        temp_audiofile_path=str(OUTPUT_DIR),
+                        logger=None,
+                    )
+
             else:
-                raise ValueError(f"Неподдерживаемый формат аудио: {target_format}")
+                raise ValueError(f"Неподдерживаемый формат аудио/видео: {target_format}")
 
         # Конечная очистка временного файла
         finally:
@@ -139,7 +149,7 @@ class YoutubeConverter:
         lang: str = "ru"
     ):
         """
-        Сохраняет субтитры Youtube видео
+        Сохраняет субтитры YouTube видео
         """
         caption = self.get_video_caption_by_lang_code(lang=lang)
         if caption is None:
