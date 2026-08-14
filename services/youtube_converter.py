@@ -145,7 +145,6 @@ class YoutubeConverter:
     def save_video_captions(
         self,
         filename: str | None = None,
-        path: Path = OUTPUT_DIR,
         lang: str = "ru"
     ):
         """
@@ -166,13 +165,6 @@ class YoutubeConverter:
         """
         return self.youtube_object.captions.get(lang, None)
 
-    def download_file(self, filename: str | None = None):
-        """
-        Производит скачивание файла (Устаревшая версия: лучше пользоваться download_with_quality)
-        """
-        # Важное уточнение: output_path - это директория, а не конечное имя
-        self.youtube_object.streams.get_lowest_resolution().download(output_path=str(OUTPUT_DIR), filename=filename)
-
     def is_valid_url(self, url: str):
         """
         Проверяет, существует ли заданные домен
@@ -183,12 +175,3 @@ class YoutubeConverter:
             return all([result.scheme, result.netloc])
         except Exception:
             return False
-
-
-"""
-Для тестов оставил
-test1 = YoutubeConverter(url="https://music.youtube.com/watch?v=mRXRg6fR-nU&list=RDAMVMmRXRg6fR-nU")
-test1.download_file(filename='Дотка.mp4')
-test1 = VideoConverter(filename="Дотка.mp4")
-test1.converter_file(new_filename='ТестНовойФичи', target_format='mp3')
-"""
