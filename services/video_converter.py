@@ -40,35 +40,36 @@ class VideoConverter:
         """
         Принимает новое имя файла и формат файла... возвращает его в новом формате
         """
-        target_format = target_format.lower()
-
-        if target_format not in POSSIBLE_AUDIO_CODECS:
-            raise ValueError(f"Неподдерживаемый тип данных: {target_format}")
-
-        if self.input_video_file.audio is None:
-            raise ValueError("Файл не содержит аудио дорожку")
-
-        new_filename = sanitize_filename(new_filename) if new_filename else self.filename
-        output_path = OUTPUT_DIR / f"{new_filename}.{target_format}"
-        codec_settings = POSSIBLE_AUDIO_CODECS[target_format]
-
-        write_args = {
-            "filename": str(output_path),
-            "codec": codec_settings["codec"],
-            "logger": None
-        }
-
-        if codec_settings.get("bitrate"):
-            write_args["bitrate"] = codec_settings["bitrate"]
-
+        output_path = None
         try:
+            target_format = target_format.lower()
+
+            if target_format not in POSSIBLE_AUDIO_CODECS:
+                raise ValueError(f"Неподдерживаемый тип данных: {target_format}")
+
+            if self.input_video_file.audio is None:
+                raise ValueError("Файл не содержит аудио дорожку")
+
+            new_filename = sanitize_filename(new_filename) if new_filename else self.filename
+            output_path = OUTPUT_DIR / f"{new_filename}.{target_format}"
+            codec_settings = POSSIBLE_AUDIO_CODECS[target_format]
+
+            write_args = {
+                "filename": str(output_path),
+                "codec": codec_settings["codec"],
+                "logger": None
+            }
+
+            if codec_settings.get("bitrate"):
+                write_args["bitrate"] = codec_settings["bitrate"]
+
             # Создаем измененный файл аудио формата
             self.input_video_file.audio.write_audiofile(**write_args)
             return str(output_path)
 
         except Exception as ex:
             # Если конвертация упала — подчищаем недописанный битый выходной файл
-            if output_path.exists():
+            if output_path and output_path.exists():
                 try:
                     output_path.unlink()
                 except OSError:
